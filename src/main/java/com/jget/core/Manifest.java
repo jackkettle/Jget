@@ -11,68 +11,67 @@ import org.springframework.util.StringUtils;
 
 public class Manifest {
 
-	private static Path rootDir;
+    private Path rootDir;
 
-	private static List<String> seeds;
-	
-	private static String rootUrl;
+    private List<String> seeds;
 
-	public boolean validate() {
+    private String rootUrl;
 
-		if (rootDir == null) {
-			logger.info("The rootDir has not been set");
-			return false;
-		}
+    public boolean validate() {
 
-		if (!Files.exists(rootDir)) {
-			logger.info("The following path does not exist: {}", rootDir);
-			return false;
-		}
-		
-		if (StringUtils.isEmpty(rootUrl)) {
-			logger.info("The rootUrl has not been set");
-			return false;
-		}
+        if (rootDir == null) {
+            logger.info("The rootDir has not been set");
+            return false;
+        }
 
-		if (!(seeds.size() > 0)) {
-			logger.info("The following path does not exist: {}", rootDir);
-			return false;		
-		}
-		
-		return true;
-	}
+        if (!Files.exists(rootDir)) {
+            logger.info("The following path does not exist: {}", rootDir);
+            return false;
+        }
 
-	public Manifest(){
-		super();
-		rootUrl = "";
-		seeds = new ArrayList<String>();
-	}
-	
+        if (StringUtils.isEmpty(rootUrl)) {
+            logger.info("The rootUrl has not been set");
+            return false;
+        }
 
-	public static List<String> getSeeds() {
-		return seeds;
-	}
+        if (!(seeds.size() > 0)) {
+            logger.info("No seeds have been added");
+            return false;
+        }
 
-	public static void setSeeds(List<String> seeds) {
-		Manifest.seeds = seeds;
-	}
-	
-	public static Path getRootDir() {
-		return rootDir;
-	}
+        return true;
+    }
 
-	public static void setRootDir(Path rootDir) {
-		Manifest.rootDir = rootDir;
-	}
+    public Manifest() {
+        super();
+        rootUrl = "";
+        seeds = new ArrayList<String>();
+    }
 
-	public static String getRootUrl() {
-		return rootUrl;
-	}
+    public List<String> getSeeds() {
+        return this.seeds;
+    }
 
-	public static void setRootUrl(String rootUrl) {
-		Manifest.rootUrl = rootUrl;
-	}
+    public void setSeeds(List<String> seeds) {
+        this.seeds = seeds;
+    }
 
-	private static final Logger logger = LoggerFactory.getLogger(Manifest.class);
+    public Path getRootDir() {
+        return this.rootDir;
+    }
+
+    public void setRootDir(Path rootDir) {
+        this.rootDir = rootDir;
+    }
+
+    public String getRootUrl() {
+        return this.rootUrl;
+    }
+
+    public void setRootUrl(String rootUrl) {
+        this.rootUrl = rootUrl;
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(Manifest.class);
 
 }

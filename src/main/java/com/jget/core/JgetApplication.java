@@ -1,22 +1,16 @@
 package com.jget.core;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
+import com.jget.core.download.DownloadManager;
 import com.jget.core.spring.ApplicationContextProvider;
 
 @Component
@@ -41,24 +35,27 @@ public class JgetApplication {
 
         Path rootDir = Paths.get("C:\\media");
         String urlString = "http://www.programcreek.com/java-api-examples/includes/images/api-logo.png";
-        
+
         Manifest manifest = new Manifest();
-        
-        manifest.setRootDir(rootDir);;
+
+        manifest.setRootDir(rootDir);
+        ;
         manifest.getSeeds().add("www.programcreek.com");
         manifest.setRootUrl(urlString);
-        
+
         Boolean isValid = manifest.validate();
-        
-        if(!isValid)
-        {
-        	logger.info("The manifest is invalid");
-            return;	
+
+        if (!isValid) {
+            logger.info("The manifest is invalid");
+            return;
         }
-        
-        
+
+        DownloadManager downloadManager = new DownloadManager();
+        downloadManager.setManifest(manifest);
+        downloadManager.commenceDownload();
+
     }
-    
+
     private static final Logger logger = LoggerFactory.getLogger(JgetApplication.class);
 
 }
