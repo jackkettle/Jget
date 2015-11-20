@@ -11,8 +11,9 @@ public class DownloadStatus {
     public static final int COMPLETE = 2;
     public static final int CANCELLED = 3;
     public static final int ERROR = 4;
+    public static final int TESTING = 5;
 
-    public static final String STATUSES[] = { "Downloading", "Paused", "Complete", "Cancelled", "Error" };
+    public static final String STATUSES[] = { "Downloading", "Paused", "Complete", "Cancelled", "Error", "Testing" };
 
     public DownloadStatus(int size) {
         super();
