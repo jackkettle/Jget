@@ -1,13 +1,14 @@
 package com.jget.core;
 
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 public class Manifest {
 
@@ -15,7 +16,9 @@ public class Manifest {
 
     private List<String> seeds;
 
-    private String rootUrl;
+    private List<String> rootUrls;
+    
+    private ConcurrentLinkedQueue<URL> frontier;
 
     public boolean validate() {
 
@@ -29,8 +32,8 @@ public class Manifest {
             return false;
         }
 
-        if (StringUtils.isEmpty(rootUrl)) {
-            logger.info("The rootUrl has not been set");
+        if (!(rootUrls.size() > 0)) {
+            logger.info("The rootUrls has not been added");
             return false;
         }
 
@@ -44,15 +47,24 @@ public class Manifest {
 
     public Manifest() {
         super();
-        rootUrl = "";
-        seeds = new ArrayList<String>();
+        this.rootUrls = new ArrayList<String>();
+        this.seeds = new ArrayList<String>();
+        this.frontier = new ConcurrentLinkedQueue<URL>();
     }
 
     public List<String> getSeeds() {
         return this.seeds;
     }
 
-    public void setSeeds(List<String> seeds) {
+    public List<String> getRootUrls() {
+		return rootUrls;
+	}
+
+	public void setRootUrls(List<String> rootUrls) {
+		this.rootUrls = rootUrls;
+	}
+
+	public void setSeeds(List<String> seeds) {
         this.seeds = seeds;
     }
 
@@ -64,14 +76,14 @@ public class Manifest {
         this.rootDir = rootDir;
     }
 
-    public String getRootUrl() {
-        return this.rootUrl;
-    }
+    public ConcurrentLinkedQueue<URL> getFrontier() {
+		return this.frontier;
+	}
 
-    public void setRootUrl(String rootUrl) {
-        this.rootUrl = rootUrl;
-    }
+	public void setFrontier(ConcurrentLinkedQueue<URL> frontier) {
+		this.frontier = frontier;
+	}
 
-    private static final Logger logger = LoggerFactory.getLogger(Manifest.class);
+	private static final Logger logger = LoggerFactory.getLogger(Manifest.class);
 
 }

@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.jget.core.JgetApplication;
-import com.jget.core.Manifest;
+import com.jget.core.ManifestProvider;
 
 @Component
-public class DownloadMediaTask implements Runnable {
+public class DownloadMediaTask implements Runnable, DownloadTask {
     
     @Override
     public void run() {
@@ -32,23 +32,28 @@ public class DownloadMediaTask implements Runnable {
     
     public Optional<File> saveFileFromURL(URL url) {
 
-        Path filePath = Paths.get(Manifest.getRootDir() + url.getFile());
+        Path filePath = Paths.get(ManifestProvider.getManifest().getRootDir() + url.getFile());
         try {
             Files.createDirectories(filePath.getParent());
             ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-            FileOutputStream fos = new FileOutputStream(Manifest.getRootDir() + url.getFile());
+            FileOutputStream fos = new FileOutputStream(ManifestProvider.getManifest().getRootDir() + url.getFile());
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
             fos.close();
         } catch (IOException e) {
-            logger.info("Failed create file from url: {}", url.toString());
+            logger.info("Failed to create file from url: {}", url.toString());
         	return Optional.empty();
         }
 
         return Optional.of(filePath.toFile());
     }
     
+    public DownloadMediaTask(){
+ 
+    }
+    
     public DownloadMediaTask(URL url){
-        this.url = url;
+        super();
+    	this.url = url;
     }
 
     public DownloadStatus getDownloadStatus() {
@@ -70,6 +75,6 @@ public class DownloadMediaTask implements Runnable {
     private URL url;
     private DownloadStatus downloadStatus;
     
-    private static final Logger logger = LoggerFactory.getLogger(JgetApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(DownloadMediaTask.class);
 
 }

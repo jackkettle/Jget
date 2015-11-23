@@ -33,16 +33,16 @@ public class JgetApplication {
 
     private void mainMethod() throws IOException {
 
-        Path rootDir = Paths.get("C:\\media");
-        String urlString = "http://www.programcreek.com/java-api-examples/includes/images/api-logo.png";
+        Path rootDir = Paths.get("F:\\Java");
+        String urlSeed = "www.terminalfour.com";
+        String urlString = "http://www.terminalfour.com/";
 
         Manifest manifest = new Manifest();
 
         manifest.setRootDir(rootDir);
-        ;
-        manifest.getSeeds().add("www.programcreek.com");
-        manifest.setRootUrl(urlString);
-
+        manifest.getSeeds().add(urlSeed);
+        manifest.getRootUrls().add(urlString);
+        
         Boolean isValid = manifest.validate();
 
         if (!isValid) {
@@ -50,8 +50,9 @@ public class JgetApplication {
             return;
         }
 
+        ManifestProvider.setManifest(manifest);
+        
         DownloadManager downloadManager = new DownloadManager();
-        downloadManager.setManifest(manifest);
         downloadManager.commenceDownload();
 
     }
