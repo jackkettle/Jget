@@ -30,80 +30,79 @@ import com.jget.core.utils.url.UrlUtils;
 @Component
 public class DownloadPageTask implements Runnable, DownloadTask {
 
-	@Override
-	public void run() {
+    @Override
+    public void run() {
 
-		Optional<File> mediaFile = saveFileFromURL(this.getUrl());
+        Optional<File> mediaFile = saveFileFromURL(this.getUrl());
 
-		if (!mediaFile.isPresent())
-			logger.info("Failed to download file form url: {}", this.getUrl());
+        if (!mediaFile.isPresent())
+            logger.info("Failed to download file form url: {}", this.getUrl());
 
-		Document document = null;
-		try {
-			document = Jsoup.parse(mediaFile.get(), "UTF-8");
-		} catch (IOException e) {
-			logger.info("Invalid html file: {}", this.getUrl());
-			return;
-		}
+        Document document = null;
+        try {
+            document = Jsoup.parse(mediaFile.get(), "UTF-8");
+        } catch (IOException e) {
+            logger.info("Invalid html file: {}", this.getUrl());
+            return;
+        }
 
-		HtmlAnalyser.getAllValidLinks(document, this.getUrl());
+        HtmlAnalyser.getAllValidLinks(document, this.getUrl());
 
-	}
+    }
 
-	public Optional<File> saveFileFromURL(URL url) {
+    public Optional<File> saveFileFromURL(URL url) {
 
-		String fileName = "";
+        String fileName = "";
 
-		if (StringUtils.isEmpty(url.getFile()) || url.getFile().equals("/")) {
-			fileName = "index.html";
-		}
+        if (StringUtils.isEmpty(url.getFile()) || url.getFile().equals("/")) {
+            fileName = "index.html";
+        }
 
-		Path filePath = Paths.get(ManifestProvider.getManifest().getRootDir() + url.getFile() + fileName);
-		logger.info("Blah: {}", filePath);
+        Path filePath = Paths.get(ManifestProvider.getManifest().getRootDir() + url.getFile() + fileName);
+        logger.info("Blah: {}", filePath);
 
-		try {
-			Files.createDirectories(filePath.getParent());
-			ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-			FileOutputStream fos = new FileOutputStream(
-					ManifestProvider.getManifest().getRootDir() + url.getFile() + fileName);
-			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-			fos.close();
-		} catch (IOException e) {
-			logger.error("Failed create file from url: {}", url.toString(), e);
-			return Optional.empty();
-		}
+        try {
+            Files.createDirectories(filePath.getParent());
+            ReadableByteChannel rbc = Channels.newChannel(url.openStream());
+            FileOutputStream fos = new FileOutputStream(ManifestProvider.getManifest().getRootDir() + url.getFile() + fileName);
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            fos.close();
+        } catch (IOException e) {
+            logger.error("Failed create file from url: {}", url.toString(), e);
+            return Optional.empty();
+        }
 
-		return Optional.of(filePath.toFile());
-	}
+        return Optional.of(filePath.toFile());
+    }
 
-	public DownloadPageTask() {
+    public DownloadPageTask() {
 
-	}
+    }
 
-	public DownloadPageTask(URL url) {
-		super();
-		this.url = url;
-	}
+    public DownloadPageTask(URL url) {
+        super();
+        this.url = url;
+    }
 
-	public DownloadStatus getDownloadStatus() {
-		return downloadStatus;
-	}
+    public DownloadStatus getDownloadStatus() {
+        return downloadStatus;
+    }
 
-	public void setDownloadStatus(DownloadStatus downloadStatus) {
-		this.downloadStatus = downloadStatus;
-	}
+    public void setDownloadStatus(DownloadStatus downloadStatus) {
+        this.downloadStatus = downloadStatus;
+    }
 
-	public URL getUrl() {
-		return url;
-	}
+    public URL getUrl() {
+        return url;
+    }
 
-	public void setUrl(URL url) {
-		this.url = url;
-	}
+    public void setUrl(URL url) {
+        this.url = url;
+    }
 
-	private URL url;
-	private DownloadStatus downloadStatus;
+    private URL url;
+    private DownloadStatus downloadStatus;
 
-	private static final Logger logger = LoggerFactory.getLogger(DownloadPageTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(DownloadPageTask.class);
 
 }

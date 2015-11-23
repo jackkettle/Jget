@@ -64,14 +64,14 @@ public class HtmlAnalyser {
 
 			if (!uri.isAbsolute()) {
 				try {
-					String fullUrl = concatLinks(baseUrl.toString(), uri.toString());
+					String fullUrl = UrlUtils.concatLinks(baseUrl.toString(), uri.toString());
 					uri = new URI(fullUrl);
 				} catch (URISyntaxException e) {
 					logger.info("Failed to parse link: {}", link);
 					continue;
 				}
 			} else {
-				if (!doesLinkContainSeed(uri.toString())) {
+				if (!UrlUtils.doesLinkContainSeed(uri.toString())) {
 					logger.info("Invalid link: {}", uri.toString());
 					continue;
 				}
@@ -82,42 +82,6 @@ public class HtmlAnalyser {
 
 		}
 		return validLinks;
-	}
-
-	private static boolean doesLinkContainSeed(String url) {
-
-		for (String seed : ManifestProvider.getManifest().getSeeds()) {
-			if (url.contains(seed)) {
-				return true;
-			}
-		}
-
-		return false;
-
-	}
-
-	private static String concatLinks(String base, String relative) {
-
-		if (StringUtils.isEmpty(base) && StringUtils.isEmpty(relative))
-			return "";
-
-		if (StringUtils.isEmpty(base) && !StringUtils.isEmpty(relative))
-			return relative;
-
-		if (!StringUtils.isEmpty(base) && StringUtils.isEmpty(relative))
-			return base;
-
-		if (base.endsWith("/") && relative.startsWith("/"))
-			return base + relative.substring(1);
-
-		if (base.endsWith("/") && !relative.startsWith("/"))
-			return base + relative;
-
-		if (!base.endsWith("/") && relative.startsWith("/"))
-			return base + relative;
-
-		return base + "/" + relative;
-
 	}
 
 	private static final Logger logger = LoggerFactory.getLogger(HtmlAnalyser.class);
