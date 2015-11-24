@@ -3,6 +3,9 @@ package com.jget.core.download;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -20,8 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.jget.core.JgetApplication;
 import com.jget.core.ManifestProvider;
+import com.jget.core.utils.html.HtmlAnalyser;
+import com.jget.core.utils.url.UrlUtils;
 
 @Component
 public class DownloadPageTask implements Runnable, DownloadTask {
@@ -42,21 +46,7 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 			return;
 		}
 
-		Elements elements = document.select(LINK_SELECTOR);
-
-		if (!elements.isEmpty())
-			logger.info("Searching html file for links: {}", url.toString());
-
-		for (Element element : elements) {
-
-			String link = element.attr("href");
-
-			if (StringUtils.isEmpty(link))
-				link = element.attr("src");
-			
-			logger.info("Found link: {}", link);
-
-		}
+		HtmlAnalyser.getAllValidLinks(document, this.getUrl());
 
 	}
 
@@ -67,14 +57,15 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 		if (StringUtils.isEmpty(url.getFile()) || url.getFile().equals("/")) {
 			fileName = "index.html";
 		}
-		
+
 		Path filePath = Paths.get(ManifestProvider.getManifest().getRootDir() + url.getFile() + fileName);
 		logger.info("Blah: {}", filePath);
-		
+
 		try {
 			Files.createDirectories(filePath.getParent());
 			ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-			FileOutputStream fos = new FileOutputStream(ManifestProvider.getManifest().getRootDir() + url.getFile() + fileName);
+			FileOutputStream fos = new FileOutputStream(
+					ManifestProvider.getManifest().getRootDir() + url.getFile() + fileName);
 			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 			fos.close();
 		} catch (IOException e) {
@@ -114,7 +105,5 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 	private DownloadStatus downloadStatus;
 
 	private static final Logger logger = LoggerFactory.getLogger(DownloadPageTask.class);
-
-	private static final String LINK_SELECTOR = "a[href], [src], link[href]";
 
 }
