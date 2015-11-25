@@ -1,6 +1,5 @@
 package com.jget.core.download;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,18 +31,6 @@ public class DownloadManager {
 
 	public void commenceDownload() {
 
-		logger.info("Testing {} rootUrls", ManifestProvider.getManifest().getRootUrls().size());
-		for (String urlString : ManifestProvider.getManifest().getRootUrls()) {
-			try {
-				URL url = new URL(urlString);
-				ManifestProvider.getManifest().getFrontier().add(url);
-			} catch (MalformedURLException e) {
-				logger.info("Invalid root Url: {}", urlString);
-				return;
-			}
-
-		}
-
 		logger.info("Beginning download");
 		while (!ManifestProvider.getManifest().getFrontier().isEmpty()) {
 
@@ -69,24 +56,18 @@ public class DownloadManager {
 				logger.info("No urls to process, Waiting for tasks to finish");
 				waitForTasksToComplete();
 			}
-
 			reviewRunningTasks();
 		}
-
 	}
 
 	public void reviewRunningTasks() {
 
 		List<Future<?>> finishedTasks = new ArrayList<Future<?>>();
-
 		for (Future<?> future : runningTasks) {
-
 			if (future.isDone()) {
 				finishedTasks.add(future);
 			}
-
 		}
-
 		runningTasks.removeAll(finishedTasks);
 
 	}
@@ -94,13 +75,11 @@ public class DownloadManager {
 	public void waitForTasksToComplete() {
 
 		for (Future<?> future : runningTasks) {
-
 			try {
 				future.get();
 			} catch (InterruptedException | NoSuchElementException | ExecutionException e) {
-				logger.error("Failed to get info: {}", future.toString());
+				logger.error("Failed to get info: {}", future.toString(), e);
 			}
-
 		}
 
 	}

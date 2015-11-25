@@ -3,8 +3,8 @@ package com.jget.core.utils.html;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,15 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import com.jget.core.ManifestProvider;
 import com.jget.core.download.DownloadConfig;
 import com.jget.core.utils.url.UrlUtils;
 
 public class HtmlAnalyser {
 
-	public static List<URI> getAllValidLinks(Document document, URL baseUrl) {
+	public static Set<URI> getAllValidLinks(Document document, URL baseUrl) {
 
-		List<URI> validLinks = new ArrayList<URI>();
+		Set<URI> validLinks = new HashSet<URI>();
 
 		Elements elements = document.select(DownloadConfig.LINK_SELECTOR);
 

@@ -1,5 +1,6 @@
 package com.jget.core;
 
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +15,7 @@ public class Manifest {
 
     private Path rootDir;
 
-    private List<String> seeds;
+    private List<URI> seeds;
 
     private List<String> rootUrls;
     
@@ -48,11 +49,11 @@ public class Manifest {
     public Manifest() {
         super();
         this.rootUrls = new ArrayList<String>();
-        this.seeds = new ArrayList<String>();
+        this.seeds = new ArrayList<URI>();
         this.frontier = new ConcurrentLinkedQueue<URL>();
     }
 
-    public List<String> getSeeds() {
+    public List<URI> getSeeds() {
         return this.seeds;
     }
 
@@ -64,7 +65,7 @@ public class Manifest {
 		this.rootUrls = rootUrls;
 	}
 
-	public void setSeeds(List<String> seeds) {
+	public void setSeeds(List<URI> seeds) {
         this.seeds = seeds;
     }
 

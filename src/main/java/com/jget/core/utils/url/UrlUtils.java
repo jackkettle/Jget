@@ -1,5 +1,7 @@
 package com.jget.core.utils.url;
 
+import java.net.URI;
+
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.util.StringUtils;
 
@@ -42,12 +44,11 @@ public class UrlUtils {
 
     public static boolean doesLinkContainSeed(String url) {
 
-        for (String seed : ManifestProvider.getManifest().getSeeds()) {
-            if (url.contains(seed)) {
+        for (URI seed : ManifestProvider.getManifest().getSeeds()) {
+            if (url.contains(seed.toString())) {
                 return true;
             }
         }
-
         return false;
 
     }
