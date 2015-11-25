@@ -19,71 +19,75 @@ import com.jget.core.utils.url.UrlAnalysisResult;
 
 public class DownloadManager {
 
-	public static ThreadPoolTaskExecutor taskExecutor;
-	public static List<Future<?>> runningTasks;
+    public static ThreadPoolTaskExecutor taskExecutor;
+    public static List<Future<?>> runningTasks;
 
-	public DownloadManager() {
+    public DownloadManager() {
 
-		runningTasks = new ArrayList<Future<?>>();
-		taskExecutor = (ThreadPoolTaskExecutor) ApplicationContextProvider.getBean(ThreadPoolTaskExecutor.class);
-		taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
-	}
+        runningTasks = new ArrayList<Future<?>>();
+        taskExecutor = (ThreadPoolTaskExecutor) ApplicationContextProvider.getBean(ThreadPoolTaskExecutor.class);
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+    }
 
-	public void commenceDownload() {
+    public void commenceDownload() {
 
-		logger.info("Beginning download");
-		while (!ManifestProvider.getManifest().getFrontier().isEmpty()) {
+        logger.info("Beginning download");
+        while (!ManifestProvider.getManifest().getFrontier().isEmpty()) {
 
-			URL url = ManifestProvider.getManifest().getFrontier().poll();
+            logger.info("Total threads running: {}", taskExecutor.getActiveCount());
+            logger.info("Total size of frontier: {}", ManifestProvider.getManifest().getFrontier().size());
+            logger.info("Total size of linkMap: {}", ManifestProvider.getManifest().getLinkMap().size());
+            
+            URL url = ManifestProvider.getManifest().getFrontier().poll();
 
-			UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse(url);
+            UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse(url);
 
-			if (!urlAnalyserResult.isValidLink())
-				logger.info("Invalid link: {}", url);
+            if (!urlAnalyserResult.isValidLink())
+                logger.info("Invalid link: {}", url);
 
-			logger.info("Processing url: {}", url.toString());
-			logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
-			
-			if (urlAnalyserResult.getContentType().getMimeType().equals(ContentType.TEXT_HTML.getMimeType())) {
-				DownloadPageTask downloadPageTask = new DownloadPageTask(url);
-				runningTasks.add(taskExecutor.submit(downloadPageTask));
-			} else {
-				DownloadMediaTask downloadMediaTask = new DownloadMediaTask(url);
-				runningTasks.add(taskExecutor.submit(downloadMediaTask));
-			}
+            logger.info("Processing url: {}", url.toString());
+            logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
 
-			if (ManifestProvider.getManifest().getFrontier().isEmpty() && (taskExecutor.getActiveCount() > 0)) {
-				logger.info("No urls to process, Waiting for tasks to finish");
-				waitForTasksToComplete();
-			}
-			reviewRunningTasks();
-		}
-	}
+            if (urlAnalyserResult.getContentType().getMimeType().equals(ContentType.TEXT_HTML.getMimeType())) {
+                DownloadPageTask downloadPageTask = new DownloadPageTask(url);
+                runningTasks.add(taskExecutor.submit(downloadPageTask));
+            } else {
+                DownloadMediaTask downloadMediaTask = new DownloadMediaTask(url);
+                runningTasks.add(taskExecutor.submit(downloadMediaTask));
+            }
 
-	public void reviewRunningTasks() {
+            if (ManifestProvider.getManifest().getFrontier().isEmpty() && (taskExecutor.getActiveCount() > 0)) {
+                logger.info("No urls to process, Waiting for tasks to finish");
+                waitForTasksToComplete();
+            }
+            reviewRunningTasks();
+        }
+    }
 
-		List<Future<?>> finishedTasks = new ArrayList<Future<?>>();
-		for (Future<?> future : runningTasks) {
-			if (future.isDone()) {
-				finishedTasks.add(future);
-			}
-		}
-		runningTasks.removeAll(finishedTasks);
+    public void reviewRunningTasks() {
 
-	}
+        List<Future<?>> finishedTasks = new ArrayList<Future<?>>();
+        for (Future<?> future : runningTasks) {
+            if (future.isDone()) {
+                finishedTasks.add(future);
+            }
+        }
+        runningTasks.removeAll(finishedTasks);
 
-	public void waitForTasksToComplete() {
+    }
 
-		for (Future<?> future : runningTasks) {
-			try {
-				future.get();
-			} catch (InterruptedException | NoSuchElementException | ExecutionException e) {
-				logger.error("Failed to get info: {}", future.toString(), e);
-			}
-		}
+    public void waitForTasksToComplete() {
 
-	}
+        for (Future<?> future : runningTasks) {
+            try {
+                future.get();
+            } catch (InterruptedException | NoSuchElementException | ExecutionException e) {
+                logger.error("Failed to get info: {}", future.toString(), e);
+            }
+        }
 
-	private static final Logger logger = LoggerFactory.getLogger(DownloadManager.class);
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(DownloadManager.class);
 
 }

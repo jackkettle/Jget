@@ -5,6 +5,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -20,6 +21,8 @@ public class Manifest {
     private List<String> rootUrls;
     
     private ConcurrentLinkedQueue<URL> frontier;
+    
+    private HashMap<URL, Path> linkMap;
 
     public boolean validate() {
 
@@ -51,6 +54,7 @@ public class Manifest {
         this.rootUrls = new ArrayList<String>();
         this.seeds = new ArrayList<URI>();
         this.frontier = new ConcurrentLinkedQueue<URL>();
+        this.linkMap = new HashMap<URL, Path>();
     }
 
     public List<URI> getSeeds() {
@@ -85,6 +89,14 @@ public class Manifest {
 		this.frontier = frontier;
 	}
 
-	private static final Logger logger = LoggerFactory.getLogger(Manifest.class);
+	public HashMap<URL, Path> getLinkMap() {
+        return linkMap;
+    }
+
+    public void setLinkMap(HashMap<URL, Path> linkMap) {
+        this.linkMap = linkMap;
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(Manifest.class);
 
 }

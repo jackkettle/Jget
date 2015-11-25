@@ -1,6 +1,9 @@
 package com.jget.core.utils.url;
 
 import java.net.URI;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.util.StringUtils;
@@ -51,6 +54,16 @@ public class UrlUtils {
         }
         return false;
 
+    }
+    
+    public static Set<URL> removeProcessLinks(Set<URL> pageLinksUrl) {
+        
+        Set<URL> newLinks = new HashSet<URL>();
+        for(URL url: pageLinksUrl){
+            if(!ManifestProvider.getManifest().getLinkMap().containsKey(url))
+                newLinks.add(url);
+        }
+        return newLinks;
     }
 
 }

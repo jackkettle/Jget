@@ -10,6 +10,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ import com.google.common.collect.FluentIterable;
 import com.jget.core.ManifestProvider;
 import com.jget.core.utils.file.FileSystemUtils;
 import com.jget.core.utils.html.HtmlAnalyser;
+import com.jget.core.utils.url.UrlUtils;
 
 @Component
 public class DownloadPageTask implements Runnable, DownloadTask {
@@ -39,6 +41,8 @@ public class DownloadPageTask implements Runnable, DownloadTask {
             return;
         }
 
+        ManifestProvider.getManifest().getLinkMap().put(this.getUrl(), mediaFile.get().toPath());
+        
         Document document = null;
         try {
             document = Jsoup.parse(mediaFile.get(), "UTF-8");
@@ -48,7 +52,7 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         }
 
         Set<URI> pageLinks = HtmlAnalyser.getAllValidLinks(document, this.getUrl());
-        logger.info("Total links found on page: {}\n", pageLinks.size());
+        logger.info("Total links found on page: {}", pageLinks.size());
 
         Set<URL> pageLinksUrl = FluentIterable.from(pageLinks).transform(new Function<URI, URL>() {
             @Override
@@ -62,8 +66,10 @@ public class DownloadPageTask implements Runnable, DownloadTask {
             }
         }).toSet();
 
-        ManifestProvider.getManifest().getFrontier().addAll(pageLinksUrl);
-
+        Set<URL> newPageLinksUrl = UrlUtils.removeProcessLinks(pageLinksUrl);
+        logger.info("Total new links found: {}", newPageLinksUrl.size());
+        ManifestProvider.getManifest().getFrontier().addAll(newPageLinksUrl);
+        
     }
 
     public Optional<File> saveFileFromURL(URL url) {

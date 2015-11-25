@@ -22,11 +22,14 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
 
     @Override
     public void run() {
-
+        
         Optional<File> mediaFile = saveFileFromURL(this.getUrl());
 
         if (!mediaFile.isPresent())
             logger.info("Failed to download file form url: {}", this.getUrl());
+
+        ManifestProvider.getManifest().getLinkMap().put(this.getUrl(), mediaFile.get().toPath());
+    
     }
 
     public Optional<File> saveFileFromURL(URL url) {
