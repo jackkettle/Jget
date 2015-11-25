@@ -25,8 +25,10 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
         
         Optional<File> mediaFile = saveFileFromURL(this.getUrl());
 
-        if (!mediaFile.isPresent())
+        if (!mediaFile.isPresent()){
             logger.info("Failed to download file form url: {}", this.getUrl());
+            return;
+        }
 
         ManifestProvider.getManifest().getLinkMap().put(this.getUrl(), mediaFile.get().toPath());
     
