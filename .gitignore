@@ -1,0 +1,11 @@
+# Eclipse settings file
+.settings
+
+# Eclipse generated project
+.project
+
+# Compiled Java files
+target/*
+
+# Generated classpath file from eclipse
+.classpath
