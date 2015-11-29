@@ -8,6 +8,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,10 @@ import com.jget.core.utils.url.UrlUtils;
 @Component
 public class JgetApplication {
 
+    private static Path rootDir = Paths.get("D:\\Jget_Sites");
+    private static String urlSeed = "www.terminalfour.com";
+    private static String urlString = "http://www.terminalfour.com/";
+
     public static void main(String[] args) throws IOException {
 
         String springConfigXml = "spring-config.xml";
@@ -30,18 +35,25 @@ public class JgetApplication {
 
         logger.info("Running component");
         JgetApplication application = ApplicationContextProvider.getBean(JgetApplication.class);
+
+        promptUserForInputs();
         application.mainMethod();
 
         logger.info("Exiting application");
         System.exit(0);
     }
 
+    private static void promptUserForInputs(){
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter a root directory:\t");
+        rootDir = Paths.get(scanner.nextLine());
+        System.out.print("Enter a seed:\t");
+        urlSeed = scanner.nextLine();
+        System.out.print("Enter a url to start downloading:\t");
+        urlString = scanner.nextLine();
+    }
+
     private void mainMethod() {
-
-        Path rootDir = Paths.get("D:\\Jget_Sites");
-        String urlSeed = "www.terminalfour.com";
-        String urlString = "http://www.terminalfour.com/";
-
         URI urlSeedUri = null;
         try {
             urlSeedUri = new URI(urlSeed);
