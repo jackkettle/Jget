@@ -9,3 +9,6 @@ target/*
 
 # Generated classpath file from eclipse
 .classpath
+
+#Generated intelliJ
+LinkResolver.iml
