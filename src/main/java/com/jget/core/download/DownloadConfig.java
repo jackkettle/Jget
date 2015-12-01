@@ -4,4 +4,6 @@ public class DownloadConfig {
 
 	public static final String LINK_SELECTOR = "a[href], [src], link[href]";
 	
+	public static final int REDIRECT_DEPTH = 2;
+	
 }

@@ -13,3 +13,4 @@ target/*
 #Generated intelliJ
 LinkResolver.iml
 .idea/*
+/target/

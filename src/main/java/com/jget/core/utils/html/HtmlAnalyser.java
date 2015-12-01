@@ -18,71 +18,71 @@ import com.jget.core.utils.url.UrlUtils;
 
 public class HtmlAnalyser {
 
-	public static Set<URI> getAllValidLinks(Document document, URL baseUrl) {
+    public static Set<URI> getAllValidLinks(Document document, URL baseUrl) {
 
-		Set<URI> validLinks = new HashSet<URI>();
+        Set<URI> validLinks = new HashSet<URI>();
 
-		Elements elements = document.select(DownloadConfig.LINK_SELECTOR);
+        Elements elements = document.select(DownloadConfig.LINK_SELECTOR);
 
-		if (!elements.isEmpty())
-			logger.info("Searching html file for links: {}", document.location());
+        if (!elements.isEmpty())
+            logger.info("Searching html file for links: {}", document.location());
 
-		for (Element element : elements) {
+        for (Element element : elements) {
 
-			String link = element.attr("href");
-			if (StringUtils.isEmpty(link))
-				link = element.attr("src");
-			
-			if (StringUtils.isEmpty(link)){
-				logger.info("Empty link");
-				continue;
-			}
+            String link = element.attr("href");
+            if (StringUtils.isEmpty(link))
+                link = element.attr("src");
 
-			if (link.startsWith("//")){
-				logger.info("Fixing protocal relative link: {}", link);
-				link = "http:" + link;
-			}
+            if (StringUtils.isEmpty(link)) {
+                logger.debug("Empty link");
+                continue;
+            }
 
-			URI uri = null;
-			try {
-				uri = new URI(link);
-			} catch (URISyntaxException e) {
-				logger.info("Failed to parse link: {}", link);
-				continue;
-			}
+            if (link.startsWith("//")) {
+                logger.debug("Fixing protocal relative link: {}", link);
+                link = "http:" + link;
+            }
 
-			if (UrlUtils.isEmailLink(link)) {
-				logger.info("Invalid link: {}", uri.toString());
-				continue;
-			}
+            URI uri = null;
+            try {
+                uri = new URI(link);
+            } catch (URISyntaxException e) {
+                logger.debug("Failed to parse link: {}", link);
+                continue;
+            }
 
-			if (link.startsWith("#")) {
-				logger.info("Invalid link: {}", uri.toString());
-				continue;
-			}
+            if (UrlUtils.isEmailLink(link)) {
+                logger.debug("Invalid link: {}", uri.toString());
+                continue;
+            }
 
-			if (!uri.isAbsolute()) {
-				try {
-					String fullUrl = UrlUtils.concatLinks(baseUrl.toString(), uri.toString());
-					uri = new URI(fullUrl);
-				} catch (URISyntaxException e) {
-					logger.info("Failed to parse link: {}", link);
-					continue;
-				}
-			} else {
-				if (!UrlUtils.doesLinkContainSeed(uri.toString())) {
-					logger.info("Invalid link: {}", uri.toString());
-					continue;
-				}
-			}
+            if (link.startsWith("#")) {
+                logger.debug("Invalid link: {}", uri.toString());
+                continue;
+            }
 
-			logger.info("Adding valid link: {}", uri.toString());
-			validLinks.add(uri);
+            if (!uri.isAbsolute()) {
+                try {
+                    String fullUrl = UrlUtils.concatLinks(baseUrl.toString(), uri.toString());
+                    uri = new URI(fullUrl);
+                } catch (URISyntaxException e) {
+                    logger.info("Failed to parse link: {}", link);
+                    continue;
+                }
+            } else {
+                if (!UrlUtils.doesLinkContainSeed(uri.toString())) {
+                    logger.debug("Invalid link: {}", uri.toString());
+                    continue;
+                }
+            }
 
-		}
-		return validLinks;
-	}
+            logger.debug("Adding valid link: {}", uri.toString());
+            validLinks.add(uri);
 
-	private static final Logger logger = LoggerFactory.getLogger(HtmlAnalyser.class);
+        }
+        return validLinks;
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(HtmlAnalyser.class);
 
 }

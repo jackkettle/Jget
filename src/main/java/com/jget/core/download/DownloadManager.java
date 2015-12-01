@@ -1,9 +1,11 @@
 package com.jget.core.download;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -37,13 +39,42 @@ public class DownloadManager {
             logger.info("Total threads running: {}", taskExecutor.getActiveCount());
             logger.info("Total size of frontier: {}", ManifestProvider.getManifest().getFrontier().size());
             logger.info("Total size of linkMap: {}", ManifestProvider.getManifest().getLinkMap().size());
-            
+
             URL url = ManifestProvider.getManifest().getFrontier().poll();
 
             UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse(url);
 
-            if (!urlAnalyserResult.isValidLink())
-                logger.info("Invalid link: {}", url);
+            if (!urlAnalyserResult.isValidLink()) {
+                logger.info("Invalid link: {}\n", url);
+                continue;
+            }
+            
+            int redirectIndex = 0;
+            boolean brokenRedirect = false;
+            URL originalUrl = url;
+            while (urlAnalyserResult.isRedirect()) {
+                
+                redirectIndex++;
+                if (redirectIndex > DownloadConfig.REDIRECT_DEPTH) {
+                    logger.info("Exceeded redirect depth");
+                    brokenRedirect = true;
+                    break;
+                }
+                
+                Optional<UrlAnalysisResult > newUrlAnalyserResult = handleRedirect(urlAnalyserResult, url);
+                
+                if(!newUrlAnalyserResult.isPresent()){
+                    brokenRedirect = true;
+                    break;
+                }
+                
+                urlAnalyserResult = newUrlAnalyserResult.get();
+                url = urlAnalyserResult.getUrl();
+            }
+            if (brokenRedirect) {
+                logger.info("Broken redirect from original Url: {}", originalUrl.toString());
+                continue;
+            }
 
             logger.info("Processing url: {}", url.toString());
             logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
@@ -61,6 +92,9 @@ public class DownloadManager {
                 waitForTasksToComplete();
             }
             reviewRunningTasks();
+
+            if (urlAnalyserResult.isRedirect())
+                System.exit(0);
         }
     }
 
@@ -86,6 +120,24 @@ public class DownloadManager {
             }
         }
 
+    }
+
+    public Optional<UrlAnalysisResult> handleRedirect(UrlAnalysisResult urlAnalyserResult, URL url) {
+        logger.info("Handling redirect for link: {}", url.toString());
+        try {
+            url = new URL(urlAnalyserResult.getLocation());
+            urlAnalyserResult = UrlAnalyser.analyse(url);
+
+            if (!urlAnalyserResult.isValidLink()) {
+                return Optional.empty();
+            }
+            
+            logger.info("New location found: {}", url.toString());
+            return Optional.of(urlAnalyserResult);
+
+        } catch (MalformedURLException e) {
+            return Optional.empty();
+        }
     }
 
     private static final Logger logger = LoggerFactory.getLogger(DownloadManager.class);

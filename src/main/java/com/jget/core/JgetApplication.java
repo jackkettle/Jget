@@ -46,25 +46,28 @@ public class JgetApplication {
 
     private static void promptUserForInputs() {
         Scanner scanner = new Scanner(System.in);
-        
+
         System.out.print("Enter a root directory:\t");
         String rootTemp = scanner.nextLine();
         if (!StringUtils.isEmpty(rootTemp))
             rootDir = Paths.get(rootTemp);
-        
+
         System.out.print("Enter a seed:\t");
         String seedTemp = scanner.nextLine();
         if (!StringUtils.isEmpty(seedTemp))
             urlSeed = seedTemp;
-        
+
         System.out.print("Enter a url to start downloading:\t");
         String urlTemp = scanner.nextLine();
         if (!StringUtils.isEmpty(urlTemp))
-        urlString = urlTemp;
+            urlString = urlTemp;
+
+        scanner.close();
     }
 
     private void mainMethod() {
         URI urlSeedUri = null;
+        ;
         try {
             urlSeedUri = new URI(urlSeed);
         } catch (URISyntaxException e) {
