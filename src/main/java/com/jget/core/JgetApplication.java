@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.jget.core.download.DownloadManager;
 import com.jget.core.spring.ApplicationContextProvider;
@@ -43,14 +44,23 @@ public class JgetApplication {
         System.exit(0);
     }
 
-    private static void promptUserForInputs(){
+    private static void promptUserForInputs() {
         Scanner scanner = new Scanner(System.in);
+        
         System.out.print("Enter a root directory:\t");
-        rootDir = Paths.get(scanner.nextLine());
+        String rootTemp = scanner.nextLine();
+        if (!StringUtils.isEmpty(rootTemp))
+            rootDir = Paths.get(rootTemp);
+        
         System.out.print("Enter a seed:\t");
-        urlSeed = scanner.nextLine();
+        String seedTemp = scanner.nextLine();
+        if (!StringUtils.isEmpty(seedTemp))
+            urlSeed = seedTemp;
+        
         System.out.print("Enter a url to start downloading:\t");
-        urlString = scanner.nextLine();
+        String urlTemp = scanner.nextLine();
+        if (!StringUtils.isEmpty(urlTemp))
+        urlString = urlTemp;
     }
 
     private void mainMethod() {
@@ -88,12 +98,12 @@ public class JgetApplication {
                 return;
             }
         }
-        
+
         logger.info("Creating folders for {} seeds", ManifestProvider.getManifest().getSeeds().size());
-        for(URI uri: ManifestProvider.getManifest().getSeeds()){
-            
+        for (URI uri : ManifestProvider.getManifest().getSeeds()) {
+
             logger.info("Creating folder for {}", uri.toString());
-            Path seedPath =  rootDir.resolve(uri.toString());
+            Path seedPath = rootDir.resolve(uri.toString());
             logger.info("seedPath: {}", seedPath.toString());
             try {
                 Files.createDirectories(seedPath);
@@ -109,7 +119,7 @@ public class JgetApplication {
     }
 
     private void addUrlToSeeds(URL url) {
-        if(!UrlUtils.doesLinkContainSeed(url.toString())){
+        if (!UrlUtils.doesLinkContainSeed(url.toString())) {
             URI uriSeed = null;
             try {
                 uriSeed = new URI(url.getHost());
