@@ -19,6 +19,7 @@ public class UrlAnalyser {
 
         HttpURLConnection connection;
         try {
+            logger.info(url.toString());
             connection = (HttpURLConnection) url.openConnection();
             connection.setInstanceFollowRedirects(false);
             connection.setRequestMethod("HEAD");

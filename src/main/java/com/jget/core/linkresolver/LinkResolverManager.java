@@ -21,12 +21,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jget.core.ManifestProvider;
+import com.jget.core.download.DownloadConfig;
 import com.jget.core.utils.file.FileSystemUtils;
 
 public class LinkResolverManager {
 
     public void commenceResolving() {
 
+        logger.info(DownloadConfig.LINE_BREAK);
+        logger.info("Beginning link resolution");
+        logger.info(DownloadConfig.LINE_BREAK);
         List<Path> htmlFiles = null;
         try {
             htmlFiles = FileSystemUtils.populateFilesList(ManifestProvider.getManifest().getRootDir());
@@ -72,7 +76,7 @@ public class LinkResolverManager {
 
             Path relativePath = file.relativize(linkPathWrapper.get());
             String relativePathString = relativePath.toString().replace("\\", "/");
-            logger.info("Relative path {}\n\n", relativePathString);
+            logger.info("Relative path {}\n", relativePathString);
             linkElement.attr("href", relativePathString);
         }
 

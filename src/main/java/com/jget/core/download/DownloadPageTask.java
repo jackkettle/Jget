@@ -10,6 +10,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,8 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.jget.core.ManifestProvider;
 import com.jget.core.utils.file.FileSystemUtils;
 import com.jget.core.utils.html.HtmlAnalyser;
@@ -41,7 +40,7 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         }
 
         ManifestProvider.getManifest().getLinkMap().put(this.getUrl(), mediaFile.get().toPath());
-        
+
         Document document = null;
         try {
             document = Jsoup.parse(mediaFile.get(), "UTF-8");
@@ -53,31 +52,30 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         Set<URI> pageLinks = HtmlAnalyser.getAllValidLinks(document, this.getUrl());
         logger.info("Total links found on page: {}", pageLinks.size());
 
-        Set<URL> pageLinksUrl = FluentIterable.from(pageLinks).transform(new Function<URI, URL>() {
-            @Override
-            public URL apply(URI input) {
-                try {
-                    return input.toURL();
-                } catch (MalformedURLException e) {
-                    logger.info("Failed to convert URL to URI: {}", input.toString());
-                }
-                return null;
+        Set<ReferencedURL> referencedPageUrls = new HashSet<>();
+        for (URI uri : pageLinks) {
+            ReferencedURL referencedURL = new ReferencedURL();
+            referencedURL.setLocation(this.getUrl().toString());
+            try {
+                referencedURL.setUrl(uri.toURL());
+            } catch (IllegalArgumentException | MalformedURLException e) {
+                logger.info("Issue converting URI to URL: {}", uri.toString());
+                continue;
             }
-        }).toSet();
-
-        Set<URL> newPageLinksUrl = UrlUtils.removeProcessLinks(pageLinksUrl);
-        logger.info("Total new links found: {}", newPageLinksUrl.size());
-        ManifestProvider.getManifest().getFrontier().addAll(newPageLinksUrl);
+            referencedPageUrls.add(referencedURL);
+        }
         
+        Set<ReferencedURL> newPageLinksUrl = UrlUtils.removeProcessReferencedLinks(referencedPageUrls);
+        logger.info("Total new links found: {}\n", newPageLinksUrl.size());
+        ManifestProvider.getManifest().getFrontier().addAll(newPageLinksUrl);
+
     }
 
     public Optional<File> saveFileFromURL(URL url) {
 
         String fileName = "";
-        
-        if (StringUtils.isEmpty(url.getFile()) 
-                || url.getFile().equals("/") 
-                || url.getFile().charAt(url.getFile().length() - 1) == '/') {
+
+        if (StringUtils.isEmpty(url.getFile()) || url.getFile().equals("/") || url.getFile().charAt(url.getFile().length() - 1) == '/') {
             fileName = "index.html";
         }
 

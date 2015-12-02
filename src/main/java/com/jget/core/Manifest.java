@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.jget.core.download.ReferencedURL;
+
 public class Manifest {
 
     private Path rootDir;
@@ -20,7 +22,7 @@ public class Manifest {
 
     private List<String> rootUrls;
     
-    private ConcurrentLinkedQueue<URL> frontier;
+    private ConcurrentLinkedQueue<ReferencedURL> frontier;
     
     private HashMap<URL, Path> linkMap;
 
@@ -53,7 +55,7 @@ public class Manifest {
         super();
         this.rootUrls = new ArrayList<String>();
         this.seeds = new ArrayList<URI>();
-        this.frontier = new ConcurrentLinkedQueue<URL>();
+        this.frontier = new ConcurrentLinkedQueue<ReferencedURL>();
         this.linkMap = new HashMap<URL, Path>();
     }
 
@@ -81,11 +83,11 @@ public class Manifest {
         this.rootDir = rootDir;
     }
 
-    public ConcurrentLinkedQueue<URL> getFrontier() {
+    public ConcurrentLinkedQueue<ReferencedURL> getFrontier() {
 		return this.frontier;
 	}
 
-	public void setFrontier(ConcurrentLinkedQueue<URL> frontier) {
+	public void setFrontier(ConcurrentLinkedQueue<ReferencedURL> frontier) {
 		this.frontier = frontier;
 	}
 

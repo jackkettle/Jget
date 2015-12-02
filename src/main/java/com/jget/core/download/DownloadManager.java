@@ -18,6 +18,7 @@ import com.jget.core.ManifestProvider;
 import com.jget.core.spring.ApplicationContextProvider;
 import com.jget.core.utils.url.UrlAnalyser;
 import com.jget.core.utils.url.UrlAnalysisResult;
+import com.jget.core.utils.url.UrlUtils;
 
 public class DownloadManager {
 
@@ -33,57 +34,73 @@ public class DownloadManager {
 
     public void commenceDownload() {
 
+        logger.info(DownloadConfig.LINE_BREAK);
         logger.info("Beginning download");
+        logger.info(DownloadConfig.LINE_BREAK);
         while (!ManifestProvider.getManifest().getFrontier().isEmpty()) {
 
             logger.info("Total threads running: {}", taskExecutor.getActiveCount());
             logger.info("Total size of frontier: {}", ManifestProvider.getManifest().getFrontier().size());
             logger.info("Total size of linkMap: {}", ManifestProvider.getManifest().getLinkMap().size());
 
-            URL url = ManifestProvider.getManifest().getFrontier().poll();
+            ReferencedURL referencedURL = ManifestProvider.getManifest().getFrontier().poll();
 
-            UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse(url);
-
-            if (!urlAnalyserResult.isValidLink()) {
-                logger.info("Invalid link: {}\n", url);
+            if (UrlUtils.hasLinkBeenProcessed(referencedURL.getUrl())) {
+                logger.info("Link has previously been processed: {}", referencedURL.getUrl());
                 continue;
             }
-            
+
+            UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse(referencedURL.getUrl());
+
+            if (!urlAnalyserResult.isValidLink()) {
+                logger.info("Invalid link: {}\n", referencedURL.getUrl());
+                continue;
+            }
+
             int redirectIndex = 0;
             boolean brokenRedirect = false;
-            URL originalUrl = url;
+            boolean processedLink = false;
+            URL originalUrl = referencedURL.getUrl();
             while (urlAnalyserResult.isRedirect()) {
-                
+
                 redirectIndex++;
                 if (redirectIndex > DownloadConfig.REDIRECT_DEPTH) {
                     logger.info("Exceeded redirect depth");
                     brokenRedirect = true;
                     break;
                 }
-                
-                Optional<UrlAnalysisResult > newUrlAnalyserResult = handleRedirect(urlAnalyserResult, url);
-                
-                if(!newUrlAnalyserResult.isPresent()){
+
+                Optional<UrlAnalysisResult> newUrlAnalyserResult = handleRedirect(urlAnalyserResult, referencedURL.getUrl());
+
+                if (!newUrlAnalyserResult.isPresent()) {
                     brokenRedirect = true;
                     break;
                 }
-                
+
                 urlAnalyserResult = newUrlAnalyserResult.get();
-                url = urlAnalyserResult.getUrl();
+                if (UrlUtils.hasLinkBeenProcessed(urlAnalyserResult.getUrl())) {
+                    processedLink = true;
+                    break;
+                }
+                referencedURL.setUrl(urlAnalyserResult.getUrl());
             }
             if (brokenRedirect) {
                 logger.info("Broken redirect from original Url: {}", originalUrl.toString());
                 continue;
             }
+            if (processedLink) {
+                logger.info("Link has previously been processed: {}", urlAnalyserResult.getUrl());
+                continue;
+            }
 
-            logger.info("Processing url: {}", url.toString());
+            logger.info("Processing url: {}", referencedURL.getUrl().toString());
             logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
 
             if (urlAnalyserResult.getContentType().getMimeType().equals(ContentType.TEXT_HTML.getMimeType())) {
-                DownloadPageTask downloadPageTask = new DownloadPageTask(url);
+                DownloadPageTask downloadPageTask = new DownloadPageTask(referencedURL.getUrl());
                 runningTasks.add(taskExecutor.submit(downloadPageTask));
             } else {
-                DownloadMediaTask downloadMediaTask = new DownloadMediaTask(url);
+                DownloadMediaTask downloadMediaTask = new DownloadMediaTask(referencedURL.getUrl());
                 runningTasks.add(taskExecutor.submit(downloadMediaTask));
             }
 
@@ -92,9 +109,6 @@ public class DownloadManager {
                 waitForTasksToComplete();
             }
             reviewRunningTasks();
-
-            if (urlAnalyserResult.isRedirect())
-                System.exit(0);
         }
     }
 
@@ -131,7 +145,7 @@ public class DownloadManager {
             if (!urlAnalyserResult.isValidLink()) {
                 return Optional.empty();
             }
-            
+
             logger.info("New location found: {}", url.toString());
             return Optional.of(urlAnalyserResult);
 

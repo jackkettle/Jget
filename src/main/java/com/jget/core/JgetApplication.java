@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.jget.core.download.DownloadManager;
+import com.jget.core.download.ReferencedURL;
+import com.jget.core.linkresolver.LinkResolverManager;
 import com.jget.core.spring.ApplicationContextProvider;
 import com.jget.core.utils.url.UrlUtils;
 
@@ -25,7 +27,7 @@ public class JgetApplication {
 
     private static Path rootDir = Paths.get("D:\\Jget_Sites");
     private static String urlSeed = "www.terminalfour.com";
-    private static String urlString = "http://www.terminalfour.com/";
+    private static String urlString = "http://www.terminalfour.com/blog/posts/its-time-for-universities-to-get-more-appy.html";
 
     public static void main(String[] args) throws IOException {
 
@@ -93,7 +95,10 @@ public class JgetApplication {
         for (String string : ManifestProvider.getManifest().getRootUrls()) {
             try {
                 URL url = new URL(string);
-                ManifestProvider.getManifest().getFrontier().add(url);
+                ReferencedURL referencedURL = new ReferencedURL();
+                referencedURL.setLocation("");
+                referencedURL.setUrl(url);
+                ManifestProvider.getManifest().getFrontier().add(referencedURL);
                 addUrlToSeeds(url);
                 logger.info("Root Url passed: {}", string);
             } catch (MalformedURLException e) {
@@ -118,6 +123,9 @@ public class JgetApplication {
 
         DownloadManager downloadManager = new DownloadManager();
         downloadManager.commenceDownload();
+        
+        LinkResolverManager linkResolverManager = new LinkResolverManager();
+        linkResolverManager.commenceResolving();
 
     }
 

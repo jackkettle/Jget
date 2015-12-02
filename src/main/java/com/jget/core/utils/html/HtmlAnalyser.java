@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.jsoup.nodes.Document;
@@ -43,6 +44,16 @@ public class HtmlAnalyser {
                 link = "http:" + link;
             }
 
+            if (UrlUtils.isEmailLink(link)) {
+                logger.debug("Invalid link: {}", link);
+                continue;
+            }
+
+            if (link.startsWith("#")) {
+                logger.debug("Invalid link: {}", link);
+                continue;
+            }
+
             URI uri = null;
             try {
                 uri = new URI(link);
@@ -51,29 +62,29 @@ public class HtmlAnalyser {
                 continue;
             }
 
-            if (UrlUtils.isEmailLink(link)) {
-                logger.debug("Invalid link: {}", uri.toString());
-                continue;
-            }
-
-            if (link.startsWith("#")) {
-                logger.debug("Invalid link: {}", uri.toString());
-                continue;
-            }
+            String fullUri = "";
 
             if (!uri.isAbsolute()) {
-                try {
-                    String fullUrl = UrlUtils.concatLinks(baseUrl.toString(), uri.toString());
-                    uri = new URI(fullUrl);
-                } catch (URISyntaxException e) {
-                    logger.info("Failed to parse link: {}", link);
-                    continue;
-                }
+
+                fullUri = handleNonAbsoluteLink(uri, baseUrl);
+
             } else {
                 if (!UrlUtils.doesLinkContainSeed(uri.toString())) {
                     logger.debug("Invalid link: {}", uri.toString());
                     continue;
                 }
+                fullUri = uri.toString();
+            }
+
+            if(StringUtils.isEmpty(fullUri)){
+                continue;
+            }
+            
+            try {
+                uri = new URI(fullUri);
+            } catch (URISyntaxException e) {
+                logger.info("Failed to parse link: {}", link);
+                continue;
             }
 
             logger.debug("Adding valid link: {}", uri.toString());
@@ -81,6 +92,30 @@ public class HtmlAnalyser {
 
         }
         return validLinks;
+    }
+
+    private static String handleNonAbsoluteLink(URI uri, URL baseUrl) {
+
+        String fullUri = "";
+
+        if (uri.toString().startsWith("/")) {
+            Optional<URL> hostUrl = UrlUtils.getHostUrl(baseUrl);
+
+            if (!hostUrl.isPresent()) {
+                logger.debug("Unable to get host URL from link: {}", baseUrl.toString());
+                return "";
+            }
+
+            logger.info("Host url: {}", hostUrl.get());
+
+            fullUri = UrlUtils.concatLinks(hostUrl.get().toString(), uri.toString());
+        } else {
+            logger.debug("Concatenating links: {} - {}", baseUrl.toString(), uri.toString());
+            fullUri = UrlUtils.concatLinks(baseUrl.toString(), uri.toString());
+        }
+
+        return fullUri;
+
     }
 
     private static final Logger logger = LoggerFactory.getLogger(HtmlAnalyser.class);
