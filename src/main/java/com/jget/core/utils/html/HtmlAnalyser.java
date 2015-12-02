@@ -106,8 +106,6 @@ public class HtmlAnalyser {
                 return "";
             }
 
-            logger.info("Host url: {}", hostUrl.get());
-
             fullUri = UrlUtils.concatLinks(hostUrl.get().toString(), uri.toString());
         } else {
             logger.debug("Concatenating links: {} - {}", baseUrl.toString(), uri.toString());

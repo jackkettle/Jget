@@ -63,7 +63,6 @@ public class UrlUtils {
             else {
                 return base.substring(0, base.lastIndexOf("/")) + relative;
             }
-
         }
 
         return base + "/" + relative;
