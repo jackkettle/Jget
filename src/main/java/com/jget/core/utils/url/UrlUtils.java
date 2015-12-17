@@ -64,7 +64,10 @@ public class UrlUtils {
                 return base.substring(0, base.lastIndexOf("/")) + relative;
             }
         }
-
+        
+        if(base.contains("/"))
+            return base.substring(0, base.lastIndexOf("/")) + "/" + relative;
+        
         return base + "/" + relative;
 
     }
@@ -94,7 +97,7 @@ public class UrlUtils {
 
         Set<ReferencedURL> newLinks = new HashSet<ReferencedURL>();
         for (ReferencedURL url : pageLinksUrl) {
-            if (!hasLinkBeenProcessed(url.getUrl()))
+            if (!hasLinkBeenProcessed(url.getURL()))
                 newLinks.add(url);
         }
         return newLinks;

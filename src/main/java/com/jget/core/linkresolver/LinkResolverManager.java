@@ -33,7 +33,7 @@ public class LinkResolverManager {
         logger.info(DownloadConfig.LINE_BREAK);
         List<Path> htmlFiles = null;
         try {
-            htmlFiles = FileSystemUtils.populateFilesList(ManifestProvider.getManifest().getRootDir());
+            htmlFiles = FileSystemUtils.populateFilesList(ManifestProvider.getManifest().getRootDir(), DownloadConfig.HTML_EXTENSION);
         } catch (IOException e) {
             logger.info("Failed to populate file list", e);
             return;
@@ -64,21 +64,22 @@ public class LinkResolverManager {
         Elements linkElements = documnent.select("a");
 
         boolean fileModified = false;
-
+        int count = 0;
         for (Element linkElement : linkElements) {
-
             Optional<Path> linkPathWrapper = processLinkElement(linkElement);
 
             if (!linkPathWrapper.isPresent())
                 continue;
 
             fileModified = true;
-
+            count++;
             Path relativePath = file.relativize(linkPathWrapper.get());
             String relativePathString = relativePath.toString().replace("\\", "/");
             logger.info("Relative path {}\n", relativePathString);
             linkElement.attr("href", relativePathString);
         }
+        
+        logger.info("Total links fixed: {}", count);
 
         if (fileModified)
             return Optional.of(documnent);
@@ -100,9 +101,9 @@ public class LinkResolverManager {
 
         Path linkPath = ManifestProvider.getManifest().getLinkMap().get(elementUrl);
 
-        if(linkPath == null)
+        if (linkPath == null)
             return Optional.empty();
-        
+
         return Optional.of(linkPath);
     }
 

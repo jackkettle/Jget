@@ -45,22 +45,22 @@ public class DownloadManager {
 
             ReferencedURL referencedURL = ManifestProvider.getManifest().getFrontier().poll();
 
-            if (UrlUtils.hasLinkBeenProcessed(referencedURL.getUrl())) {
-                logger.info("Link has previously been processed: {}", referencedURL.getUrl());
+            if (UrlUtils.hasLinkBeenProcessed(referencedURL.getURL())) {
+                logger.info("Link has previously been processed: {}", referencedURL.getURL());
                 continue;
             }
 
-            UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse(referencedURL.getUrl());
+            UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse(referencedURL.getURL());
 
             if (!urlAnalyserResult.isValidLink()) {
-                logger.info("Invalid link: {}\n", referencedURL.getUrl());
+                logger.info("Invalid link: {}\n", referencedURL.getURL());
                 continue;
             }
 
             int redirectIndex = 0;
             boolean brokenRedirect = false;
             boolean processedLink = false;
-            URL originalUrl = referencedURL.getUrl();
+            URL originalUrl = referencedURL.getURL();
             while (urlAnalyserResult.isRedirect()) {
 
                 redirectIndex++;
@@ -70,7 +70,7 @@ public class DownloadManager {
                     break;
                 }
 
-                Optional<UrlAnalysisResult> newUrlAnalyserResult = handleRedirect(urlAnalyserResult, referencedURL.getUrl());
+                Optional<UrlAnalysisResult> newUrlAnalyserResult = handleRedirect(urlAnalyserResult, referencedURL.getURL());
 
                 if (!newUrlAnalyserResult.isPresent()) {
                     brokenRedirect = true;
@@ -82,7 +82,7 @@ public class DownloadManager {
                     processedLink = true;
                     break;
                 }
-                referencedURL.setUrl(urlAnalyserResult.getUrl());
+                referencedURL.setURL(urlAnalyserResult.getUrl());
             }
             if (brokenRedirect) {
                 logger.info("Broken redirect from original Url: {}", originalUrl.toString());
@@ -93,14 +93,14 @@ public class DownloadManager {
                 continue;
             }
 
-            logger.info("Processing url: {}", referencedURL.getUrl().toString());
+            logger.info("Processing url: {}", referencedURL.getURL().toString());
             logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
 
             if (urlAnalyserResult.getContentType().getMimeType().equals(ContentType.TEXT_HTML.getMimeType())) {
-                DownloadPageTask downloadPageTask = new DownloadPageTask(referencedURL.getUrl());
+                DownloadPageTask downloadPageTask = new DownloadPageTask(referencedURL);
                 runningTasks.add(taskExecutor.submit(downloadPageTask));
             } else {
-                DownloadMediaTask downloadMediaTask = new DownloadMediaTask(referencedURL.getUrl());
+                DownloadMediaTask downloadMediaTask = new DownloadMediaTask(referencedURL);
                 runningTasks.add(taskExecutor.submit(downloadMediaTask));
             }
 
@@ -152,8 +152,10 @@ public class DownloadManager {
         } catch (MalformedURLException e) {
             return Optional.empty();
         }
+
     }
 
+    
     private static final Logger logger = LoggerFactory.getLogger(DownloadManager.class);
 
 }

@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,6 +116,18 @@ public class HtmlAnalyser {
         return fullUri;
 
     }
+    
+    public static void removeComments(Node node) {
+        for (int i = 0; i < node.childNodes().size();) {
+            Node child = node.childNode(i);
+            if (child.nodeName().equals("#comment"))
+                child.remove();
+            else {
+                removeComments(child);
+                i++;
+            }
+        }
+    }        
 
     private static final Logger logger = LoggerFactory.getLogger(HtmlAnalyser.class);
 

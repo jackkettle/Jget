@@ -32,39 +32,42 @@ public class DownloadPageTask implements Runnable, DownloadTask {
     @Override
     public void run() {
 
-        Optional<File> mediaFile = saveFileFromURL(this.getUrl());
+        Optional<File> mediaFile = saveFileFromURL(this.getReferencedURL().getURL());
 
         if (!mediaFile.isPresent()) {
-            logger.info("Failed to download file form url: {}", this.getUrl());
+            logger.info("Failed to download file form url: {}", this.getReferencedURL().getURL());
+            logger.info("Failed file origin url: {}", this.getReferencedURL().getLocation());
             return;
         }
 
-        ManifestProvider.getManifest().getLinkMap().put(this.getUrl(), mediaFile.get().toPath());
+        ManifestProvider.getManifest().getLinkMap().put(this.getReferencedURL().getURL(), mediaFile.get().toPath());
 
         Document document = null;
         try {
             document = Jsoup.parse(mediaFile.get(), "UTF-8");
         } catch (IOException e) {
-            logger.info("Invalid html file: {}", this.getUrl());
+            logger.info("Invalid html file: {}", this.getReferencedURL().getURL());
             return;
         }
 
-        Set<URI> pageLinks = HtmlAnalyser.getAllValidLinks(document, this.getUrl());
+        HtmlAnalyser.removeComments(document);
+        
+        Set<URI> pageLinks = HtmlAnalyser.getAllValidLinks(document, this.getReferencedURL().getURL());
         logger.info("Total links found on page: {}", pageLinks.size());
 
         Set<ReferencedURL> referencedPageUrls = new HashSet<>();
         for (URI uri : pageLinks) {
             ReferencedURL referencedURL = new ReferencedURL();
-            referencedURL.setLocation(this.getUrl().toString());
+            referencedURL.setLocation(this.getReferencedURL().getURL().toString());
             try {
-                referencedURL.setUrl(uri.toURL());
+                referencedURL.setURL(uri.toURL());
             } catch (IllegalArgumentException | MalformedURLException e) {
                 logger.info("Issue converting URI to URL: {}", uri.toString());
                 continue;
             }
             referencedPageUrls.add(referencedURL);
         }
-        
+
         Set<ReferencedURL> newPageLinksUrl = UrlUtils.removeProcessReferencedLinks(referencedPageUrls);
         logger.info("Total new links found: {}\n", newPageLinksUrl.size());
         ManifestProvider.getManifest().getFrontier().addAll(newPageLinksUrl);
@@ -116,9 +119,9 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 
     }
 
-    public DownloadPageTask(URL url) {
+    public DownloadPageTask(ReferencedURL referencedURL) {
         super();
-        this.url = url;
+        this.referencedURL = referencedURL;
     }
 
     public DownloadStatus getDownloadStatus() {
@@ -129,15 +132,15 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         this.downloadStatus = downloadStatus;
     }
 
-    public URL getUrl() {
-        return url;
+    public ReferencedURL getReferencedURL() {
+        return referencedURL;
     }
 
-    public void setUrl(URL url) {
-        this.url = url;
+    public void setReferencedURL(ReferencedURL referencedURL) {
+        this.referencedURL = referencedURL;
     }
 
-    private URL url;
+    private ReferencedURL referencedURL;
     private DownloadStatus downloadStatus;
 
     private static final Logger logger = LoggerFactory.getLogger(DownloadPageTask.class);

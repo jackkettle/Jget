@@ -23,14 +23,14 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
     @Override
     public void run() {
         
-        Optional<File> mediaFile = saveFileFromURL(this.getUrl());
+        Optional<File> mediaFile = saveFileFromURL(this.getReferencedURL().getURL());
 
         if (!mediaFile.isPresent()){
-            logger.info("Failed to download file form url: {}", this.getUrl());
+            logger.info("Failed to download file form url: {}", this.getReferencedURL().getURL());
             return;
         }
 
-        ManifestProvider.getManifest().getLinkMap().put(this.getUrl(), mediaFile.get().toPath());
+        ManifestProvider.getManifest().getLinkMap().put(this.getReferencedURL().getURL(), mediaFile.get().toPath());
     
     }
 
@@ -73,9 +73,9 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
 
     }
 
-    public DownloadMediaTask(URL url) {
+    public DownloadMediaTask(ReferencedURL referencedURL) {
         super();
-        this.url = url;
+        this.referencedURL = referencedURL;
     }
 
     public DownloadStatus getDownloadStatus() {
@@ -86,15 +86,15 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
         this.downloadStatus = downloadStatus;
     }
 
-    public URL getUrl() {
-        return url;
+    public ReferencedURL getReferencedURL() {
+        return referencedURL;
     }
 
-    public void setUrl(URL url) {
-        this.url = url;
+    public void setUrl(ReferencedURL referencedURL) {
+        this.referencedURL = referencedURL;
     }
 
-    private URL url;
+    private ReferencedURL referencedURL;
     private DownloadStatus downloadStatus;
 
     private static final Logger logger = LoggerFactory.getLogger(DownloadMediaTask.class);

@@ -27,7 +27,7 @@ public class JgetApplication {
 
     private static Path rootDir = Paths.get("D:\\Jget_Sites");
     private static String urlSeed = "www.terminalfour.com";
-    private static String urlString = "http://www.terminalfour.com/blog/posts/its-time-for-universities-to-get-more-appy.html";
+    private static String urlString = "http://www.terminalfour.com";
 
     public static void main(String[] args) throws IOException {
 
@@ -97,7 +97,7 @@ public class JgetApplication {
                 URL url = new URL(string);
                 ReferencedURL referencedURL = new ReferencedURL();
                 referencedURL.setLocation("");
-                referencedURL.setUrl(url);
+                referencedURL.setURL(url);
                 ManifestProvider.getManifest().getFrontier().add(referencedURL);
                 addUrlToSeeds(url);
                 logger.info("Root Url passed: {}", string);

@@ -10,6 +10,10 @@ public class DownloadConfig {
     
     public static final String HTTPS = "https";
 
-    public static final String LINE_BREAK = "----------------------------";;
+    public static final String HTML_EXTENSION = "html";
+    
+    public static final String LINE_BREAK = "----------------------------";
+    
+    
 	
 }

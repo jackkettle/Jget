@@ -20,11 +20,11 @@ public class ReferencedURL {
         this.location = location;
     }
 
-    public URL getUrl() {
+    public URL getURL() {
         return url;
     }
 
-    public void setUrl(URL url) {
+    public void setURL(URL url) {
         this.url = url;
     }
     
