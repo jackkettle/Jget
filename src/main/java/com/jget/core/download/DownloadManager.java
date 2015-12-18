@@ -56,6 +56,11 @@ public class DownloadManager {
                 logger.info("Invalid link: {}\n", referencedURL.getURL());
                 continue;
             }
+            
+            if(UrlUtils.exceedsUrlDepth(urlAnalyserResult.getURL())){
+                logger.info("The following URL is too deep: {}", referencedURL.getURL());
+                continue;
+            }
 
             int redirectIndex = 0;
             boolean brokenRedirect = false;
@@ -78,18 +83,18 @@ public class DownloadManager {
                 }
 
                 urlAnalyserResult = newUrlAnalyserResult.get();
-                if (UrlUtils.hasLinkBeenProcessed(urlAnalyserResult.getUrl())) {
+                if (UrlUtils.hasLinkBeenProcessed(urlAnalyserResult.getURL())) {
                     processedLink = true;
                     break;
                 }
-                referencedURL.setURL(urlAnalyserResult.getUrl());
+                referencedURL.setURL(urlAnalyserResult.getURL());
             }
             if (brokenRedirect) {
                 logger.info("Broken redirect from original Url: {}", originalUrl.toString());
                 continue;
             }
             if (processedLink) {
-                logger.info("Link has previously been processed: {}", urlAnalyserResult.getUrl());
+                logger.info("Link has previously been processed: {}", urlAnalyserResult.getURL());
                 continue;
             }
 

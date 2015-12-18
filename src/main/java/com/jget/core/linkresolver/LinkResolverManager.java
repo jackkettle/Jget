@@ -19,6 +19,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import com.jget.core.ManifestProvider;
 import com.jget.core.download.DownloadConfig;
@@ -45,7 +46,7 @@ public class LinkResolverManager {
             Optional<Document> documentWrapper = processFile(file);
 
             if (documentWrapper.isPresent()) {
-                logger.debug("Updating file {}", file.toString());
+                logger.debug("Updating file {}\n", file.toString());
                 updateFile(file, documentWrapper.get());
             }
 
@@ -61,7 +62,7 @@ public class LinkResolverManager {
             return Optional.empty();
         }
 
-        Elements linkElements = documnent.select("a");
+        Elements linkElements = documnent.select(LINKS_SELECTOR);
 
         boolean fileModified = false;
         int count = 0;
@@ -73,17 +74,21 @@ public class LinkResolverManager {
 
             fileModified = true;
             count++;
-            Path relativePath = file.relativize(linkPathWrapper.get());
+            Path relativePath = file.getParent().relativize(linkPathWrapper.get());
             String relativePathString = relativePath.toString().replace("\\", "/");
-            logger.info("Relative path {}\n", relativePathString);
-            linkElement.attr("href", relativePathString);
+            
+            if(StringUtils.isEmpty(linkElement.attr("href")))
+                linkElement.attr("src", relativePathString);
+            else   
+                linkElement.attr("href", relativePathString);
         }
+
+        logger.info("Links fixed / Total links: {} / {}", count,linkElements.size());
         
-        logger.info("Total links fixed: {}", count);
-
-        if (fileModified)
+        if (fileModified){
             return Optional.of(documnent);
-
+        }
+            
         return Optional.empty();
 
     }
@@ -91,19 +96,25 @@ public class LinkResolverManager {
     private Optional<Path> processLinkElement(Element linkElement) {
         String linkPathString = linkElement.attr("href");
 
+        if(StringUtils.isEmpty(linkPathString))
+            linkPathString = linkElement.attr("src");
+        
         URL elementUrl = null;
         try {
             elementUrl = new URL(linkPathString);
         } catch (MalformedURLException e) {
-            logger.debug("Failed to conver the string to a url: {}", linkPathString);
+            logger.info("Failed to convert the string to a url: {}", linkPathString);
             return Optional.empty();
         }
 
         Path linkPath = ManifestProvider.getManifest().getLinkMap().get(elementUrl);
-
+        
         if (linkPath == null)
             return Optional.empty();
 
+        logger.info("Url in link: {}", elementUrl);
+        logger.info("Found path: {}", linkPath.toString());
+        
         return Optional.of(linkPath);
     }
 
@@ -124,6 +135,8 @@ public class LinkResolverManager {
             logger.error("Unable to update file {}", htmlFile.toString(), e);
         }
     }
+    
+    private static final String LINKS_SELECTOR = "link, style, a, img, audio, video, script, iframe";
 
     private static final Logger logger = LoggerFactory.getLogger(LinkResolverManager.class);
 

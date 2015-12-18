@@ -14,6 +14,6 @@ public class DownloadConfig {
     
     public static final String LINE_BREAK = "----------------------------";
     
+    public static final int URL_DEPTH = 1;
     
-	
 }

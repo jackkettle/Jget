@@ -15,7 +15,7 @@ public class UrlAnalyser {
 
         UrlAnalysisResult urlAnalysisResult = new UrlAnalysisResult();
         urlAnalysisResult.setValidLink(false);
-        urlAnalysisResult.setUrl(url);
+        urlAnalysisResult.setURL(url);
 
         HttpURLConnection connection;
         try {

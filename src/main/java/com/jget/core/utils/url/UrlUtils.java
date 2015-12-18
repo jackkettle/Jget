@@ -64,10 +64,10 @@ public class UrlUtils {
                 return base.substring(0, base.lastIndexOf("/")) + relative;
             }
         }
-        
-        if(base.contains("/"))
+
+        if (base.contains("/"))
             return base.substring(0, base.lastIndexOf("/")) + "/" + relative;
-        
+
         return base + "/" + relative;
 
     }
@@ -125,6 +125,35 @@ public class UrlUtils {
         }
         return Optional.of(url);
 
+    }
+
+    public static boolean exceedsUrlDepth(URL url) {
+
+        Optional<URL> hostURL = UrlUtils.getHostUrl(url);
+
+        String hostURLString = "";
+        String relativePath = url.toString();
+
+        if (hostURL.isPresent()) {
+            hostURLString = hostURL.get().toString();
+            relativePath = url.toString().replace(hostURLString.toString(), "");
+        }
+
+        int count = 0;
+        if(!relativePath.endsWith("/"))
+            count = -1;
+            
+        for (String node : relativePath.split("/")) {
+            if (StringUtils.isEmpty(node))
+                continue;
+
+            count++;
+        }
+
+        if (count > DownloadConfig.URL_DEPTH)
+            return true;
+
+        return false;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(UrlUtils.class);
