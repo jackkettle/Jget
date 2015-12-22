@@ -155,6 +155,86 @@ public class UrlUtils {
 
         return false;
     }
+    
+    private static Optional<String> handleNonAbsoluteLink(URI uri, URL baseUrl) {
+
+        if (uri.toString().startsWith("/")) {
+            Optional<URL> hostUrl = UrlUtils.getHostUrl(baseUrl);
+
+            if (!hostUrl.isPresent()) {
+                logger.debug("Unable to get host URL from link: {}", baseUrl.toString());
+                return Optional.empty();
+            }
+
+            String fullUri = UrlUtils.concatLinks(hostUrl.get().toString(), uri.toString());
+            return Optional.of(fullUri);
+
+        } else {
+            String fullUri = UrlUtils.concatLinks(baseUrl.toString(), uri.toString());
+            return Optional.of(fullUri);
+        }
+
+    }
+
+    public static Optional<URI> normalizeLink(String linkString, URL baseUrl) {
+
+        if (StringUtils.isEmpty(linkString)) {
+            logger.debug("Invalid link - Empty link");
+            return Optional.empty();
+        }
+
+        if (UrlUtils.isEmailLink(linkString)) {
+            logger.debug("Invalid link - Email link: {}", linkString);
+            return Optional.empty();
+        }
+
+        if (linkString.startsWith("#")) {
+            logger.debug("Invalid link - Anchor link: {}", linkString);
+            return Optional.empty();
+        }
+
+        if (linkString.startsWith("//")) {
+            logger.debug("Fixing protocal relative link: {}", linkString);
+            linkString = "http:" + linkString;
+        }
+
+        URI uri = null;
+        try {
+            uri = new URI(linkString);
+        } catch (URISyntaxException e) {
+            logger.debug("Invalid link - Failed to parse link: {}", linkString);
+            return Optional.empty();
+        }
+
+        Optional<String> fullURI = null;
+
+        if (uri.isAbsolute()) {
+
+            if (!UrlUtils.doesLinkContainSeed(uri.toString())) {
+                logger.debug("Invalid link - not a seed host: {}", uri.toString());
+                return Optional.empty();
+            }
+
+            fullURI = Optional.of(uri.toString());
+
+        } else {
+            fullURI = handleNonAbsoluteLink(uri, baseUrl);
+        }
+
+        if (!fullURI.isPresent())
+            return Optional.empty();
+
+        try {
+            uri = new URI(fullURI.get());
+        } catch (URISyntaxException e) {
+            logger.debug("Invalid link - Failed to parse link: {}", linkString);
+            return Optional.empty();
+        }
+
+        return Optional.of(uri);
+
+    }
+
 
     private static final Logger logger = LoggerFactory.getLogger(UrlUtils.class);
 

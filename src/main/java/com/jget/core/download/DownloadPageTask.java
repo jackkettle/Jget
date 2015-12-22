@@ -24,6 +24,7 @@ import org.springframework.util.StringUtils;
 import com.jget.core.ManifestProvider;
 import com.jget.core.utils.file.FileSystemUtils;
 import com.jget.core.utils.html.HtmlAnalyser;
+import com.jget.core.utils.html.HtmlUtils;
 import com.jget.core.utils.url.UrlUtils;
 
 @Component
@@ -50,7 +51,7 @@ public class DownloadPageTask implements Runnable, DownloadTask {
             return;
         }
 
-        HtmlAnalyser.removeComments(document);
+        HtmlUtils.removeComments(document);
         
         Set<URI> pageLinks = HtmlAnalyser.getAllValidLinks(document, this.getReferencedURL().getURL());
         logger.info("Total links found on page: {}", pageLinks.size());
