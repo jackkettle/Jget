@@ -25,6 +25,8 @@ public class Manifest {
     private ConcurrentLinkedQueue<ReferencedURL> frontier;
     
     private HashMap<URL, Path> linkMap;
+    
+    private HashMap<Path, URL> fileMap;
 
     public boolean validate() {
 
@@ -57,6 +59,7 @@ public class Manifest {
         this.seeds = new ArrayList<URI>();
         this.frontier = new ConcurrentLinkedQueue<ReferencedURL>();
         this.linkMap = new HashMap<URL, Path>();
+        this.fileMap = new HashMap<Path, URL>();
     }
 
     public List<URI> getSeeds() {
@@ -64,7 +67,7 @@ public class Manifest {
     }
 
     public List<String> getRootUrls() {
-		return rootUrls;
+		return this.rootUrls;
 	}
 
 	public void setRootUrls(List<String> rootUrls) {
@@ -92,7 +95,7 @@ public class Manifest {
 	}
 
 	public HashMap<URL, Path> getLinkMap() {
-        return linkMap;
+        return this.linkMap;
     }
 
     public void setLinkMap(HashMap<URL, Path> linkMap) {
@@ -100,5 +103,13 @@ public class Manifest {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Manifest.class);
+
+    public HashMap<Path, URL> getFileMap() {
+        return this.fileMap;
+    }
+
+    public void setFileMap(HashMap<Path, URL> fileMap) {
+        this.fileMap = fileMap;
+    }
 
 }

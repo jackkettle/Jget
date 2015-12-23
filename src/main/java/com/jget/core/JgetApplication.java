@@ -8,14 +8,15 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Scanner;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
+import com.google.common.collect.ImmutableSet;
+import com.jget.core.download.DownloadConfig;
 import com.jget.core.download.DownloadManager;
 import com.jget.core.download.ReferencedURL;
 import com.jget.core.linkresolver.LinkResolverManager;
@@ -25,9 +26,11 @@ import com.jget.core.utils.url.UrlUtils;
 @Component
 public class JgetApplication {
 
-    private static Path rootDir = Paths.get("D:\\Jget_Sites");
-    private static String urlSeed = "www.terminalfour.com";
-    private static String urlString = "http://www.terminalfour.com";
+    private static final Path ROOT_DIR = Paths.get("D:\\Jget_Sites");
+
+    public static final ImmutableSet<String> URL_SEEDS = ImmutableSet.of("www.terminalfour.com", "www-cdn.terminalfour.com");
+
+    public static final ImmutableSet<String> URL_STRING = ImmutableSet.of("http://www.terminalfour.com/");
 
     public static void main(String[] args) throws IOException {
 
@@ -39,48 +42,27 @@ public class JgetApplication {
         logger.info("Running component");
         JgetApplication application = ApplicationContextProvider.getBean(JgetApplication.class);
 
-        promptUserForInputs();
         application.mainMethod();
 
         logger.info("Exiting application");
         System.exit(0);
     }
 
-    private static void promptUserForInputs() {
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.print("Enter a root directory:\t");
-        String rootTemp = scanner.nextLine();
-        if (!StringUtils.isEmpty(rootTemp))
-            rootDir = Paths.get(rootTemp);
-
-        System.out.print("Enter a seed:\t");
-        String seedTemp = scanner.nextLine();
-        if (!StringUtils.isEmpty(seedTemp))
-            urlSeed = seedTemp;
-
-        System.out.print("Enter a url to start downloading:\t");
-        String urlTemp = scanner.nextLine();
-        if (!StringUtils.isEmpty(urlTemp))
-            urlString = urlTemp;
-
-        scanner.close();
-    }
-
     private void mainMethod() {
-        URI urlSeedUri = null;
-        ;
-        try {
-            urlSeedUri = new URI(urlSeed);
-        } catch (URISyntaxException e) {
-            logger.error("Failed to add seed: {}", urlSeed, e);
-            return;
-        }
-
         Manifest manifest = new Manifest();
-        manifest.setRootDir(rootDir);
-        manifest.getSeeds().add(urlSeedUri);
-        manifest.getRootUrls().add(urlString);
+        manifest.setRootDir(ROOT_DIR);
+        manifest.getRootUrls().addAll(URL_STRING);
+
+        URI urlSeedUri = null;
+        for (String urlString : URL_SEEDS) {
+            try {
+                urlSeedUri = new URI(urlString);
+                manifest.getSeeds().add(urlSeedUri);
+            } catch (URISyntaxException e) {
+                logger.error("Failed to add seed: {}", urlString, e);
+                return;
+            }
+        }
 
         Boolean isValid = manifest.validate();
 
@@ -111,7 +93,7 @@ public class JgetApplication {
         for (URI uri : ManifestProvider.getManifest().getSeeds()) {
 
             logger.info("Creating folder for {}", uri.toString());
-            Path seedPath = rootDir.resolve(uri.toString());
+            Path seedPath = ROOT_DIR.resolve(uri.toString());
             logger.info("seedPath: {}", seedPath.toString());
             try {
                 Files.createDirectories(seedPath);
@@ -123,10 +105,9 @@ public class JgetApplication {
 
         DownloadManager downloadManager = new DownloadManager();
         downloadManager.commenceDownload();
-        
+
         LinkResolverManager linkResolverManager = new LinkResolverManager();
         linkResolverManager.commenceResolving();
-
     }
 
     private void addUrlToSeeds(URL url) {

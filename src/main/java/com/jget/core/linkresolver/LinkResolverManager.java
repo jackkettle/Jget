@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,6 +25,7 @@ import org.springframework.util.StringUtils;
 import com.jget.core.ManifestProvider;
 import com.jget.core.download.DownloadConfig;
 import com.jget.core.utils.file.FileSystemUtils;
+import com.jget.core.utils.url.UrlUtils;
 
 public class LinkResolverManager {
 
@@ -32,6 +34,7 @@ public class LinkResolverManager {
         logger.info(DownloadConfig.LINE_BREAK);
         logger.info("Beginning link resolution");
         logger.info(DownloadConfig.LINE_BREAK);
+        
         List<Path> htmlFiles = null;
         try {
             htmlFiles = FileSystemUtils.populateFilesList(ManifestProvider.getManifest().getRootDir(), DownloadConfig.HTML_EXTENSION);
@@ -54,6 +57,13 @@ public class LinkResolverManager {
     }
 
     private Optional<Document> processFile(Path file) {
+        
+        URL baseURL = ManifestProvider.getManifest().getFileMap().get(file);
+        if(baseURL == null){
+            logger.info("Failed to resolve links in file: {}", file);
+            return Optional.empty();
+        }
+        
         Document documnent = null;
         try {
             documnent = Jsoup.parse(file.toFile(), "UTF-8");
@@ -67,7 +77,7 @@ public class LinkResolverManager {
         boolean fileModified = false;
         int count = 0;
         for (Element linkElement : linkElements) {
-            Optional<Path> linkPathWrapper = processLinkElement(linkElement);
+            Optional<Path> linkPathWrapper = processLinkElement(linkElement, baseURL);
 
             if (!linkPathWrapper.isPresent())
                 continue;
@@ -83,7 +93,7 @@ public class LinkResolverManager {
                 linkElement.attr("href", relativePathString);
         }
 
-        logger.info("Links fixed / Total links: {} / {}", count,linkElements.size());
+        logger.info("Links fixed / Total links: {} / {}\n", count,linkElements.size());
         
         if (fileModified){
             return Optional.of(documnent);
@@ -93,26 +103,39 @@ public class LinkResolverManager {
 
     }
 
-    private Optional<Path> processLinkElement(Element linkElement) {
+    private Optional<Path> processLinkElement(Element linkElement, URL baseURL) {
         String linkPathString = linkElement.attr("href");
 
         if(StringUtils.isEmpty(linkPathString))
             linkPathString = linkElement.attr("src");
         
-        URL elementUrl = null;
+        if(StringUtils.isEmpty(linkPathString))
+            return Optional.empty();
+        
+        logger.info("Url in link: {}", linkPathString);
+        
+        Optional<URI> uriWrapper = UrlUtils.normalizeLink(linkPathString, baseURL);
+        if(!uriWrapper.isPresent())
+            return Optional.empty();
+        
+        logger.info("Normalized link: {}", uriWrapper.get().toString());
+        URL urlFromMap = null;
         try {
-            elementUrl = new URL(linkPathString);
+            urlFromMap = uriWrapper.get().toURL();
         } catch (MalformedURLException e) {
-            logger.info("Failed to convert the string to a url: {}", linkPathString);
+            logger.error("Issue converting URI to URL: {}", uriWrapper.get().toString());
             return Optional.empty();
         }
-
-        Path linkPath = ManifestProvider.getManifest().getLinkMap().get(elementUrl);
         
-        if (linkPath == null)
+        Path linkPath = ManifestProvider.getManifest().getLinkMap().get(urlFromMap);
+        
+        logger.info("Testing: {}", linkPath);
+        
+        if (linkPath == null){
+            logger.info("No path found for link: {}", uriWrapper.get().toString());
             return Optional.empty();
-
-        logger.info("Url in link: {}", elementUrl);
+        }
+            
         logger.info("Found path: {}", linkPath.toString());
         
         return Optional.of(linkPath);

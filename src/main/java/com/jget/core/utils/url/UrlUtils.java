@@ -234,6 +234,26 @@ public class UrlUtils {
         return Optional.of(uri);
 
     }
+    
+    public static Optional<URL> convertDynamicLinkToStatic(URL dynamicLink){
+        
+        String urlString = dynamicLink.toString();
+        String lastFragment = urlString.substring(urlString.lastIndexOf("/") + 1, urlString.length());
+        String remainingUrl = urlString.substring(0, urlString.lastIndexOf("/") + 1);
+
+        if(urlString.contains("?"))
+            lastFragment = lastFragment.substring(0, lastFragment.lastIndexOf("?"));
+
+        String staticString = remainingUrl + lastFragment;
+        
+        try {
+            return Optional.of(new URL(staticString));
+        } catch (MalformedURLException e) {
+            logger.error("Issue with following link: {}", staticString, e);
+            return Optional.empty();
+        }
+        
+    }
 
 
     private static final Logger logger = LoggerFactory.getLogger(UrlUtils.class);

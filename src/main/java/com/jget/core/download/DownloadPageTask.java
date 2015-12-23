@@ -42,6 +42,13 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         }
 
         ManifestProvider.getManifest().getLinkMap().put(this.getReferencedURL().getURL(), mediaFile.get().toPath());
+        
+        Optional<URL> staticLinkWrapper = UrlUtils.convertDynamicLinkToStatic(this.getReferencedURL().getURL());
+        if(staticLinkWrapper.isPresent())
+            ManifestProvider.getManifest().getFileMap().put(mediaFile.get().toPath(), staticLinkWrapper.get());
+        
+        
+        logger.info("Testing something out: {}", this.getReferencedURL().getURL());
 
         Document document = null;
         try {
@@ -52,7 +59,7 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         }
 
         HtmlUtils.removeComments(document);
-        
+
         Set<URI> pageLinks = HtmlAnalyser.getAllValidLinks(document, this.getReferencedURL().getURL());
         logger.info("Total links found on page: {}", pageLinks.size());
 
@@ -95,6 +102,13 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 
         if (filePath.startsWith("/"))
             filePath = filePath.substring(1);
+
+        if (filePath.startsWith("/"))
+            filePath = filePath.substring(1);
+
+        if (filePath.contains("?")) {
+            logger.info("Dynamic link found: {}", filePath);
+        }
 
         logger.info("Relative path: {}", filePath);
 
