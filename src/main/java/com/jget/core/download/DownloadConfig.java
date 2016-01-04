@@ -4,7 +4,9 @@ public class DownloadConfig {
 
 	public static final String LINK_SELECTOR = "a[href], [src], link[href]";
 	
-	public static final int REDIRECT_DEPTH = 2;
+	public static final int MAX_REDIRECT_DEPTH = 2;
+	
+	public static final int MAX_TOTAL_LINKS = 100;
 
     public static final String HTTP = "http";
     

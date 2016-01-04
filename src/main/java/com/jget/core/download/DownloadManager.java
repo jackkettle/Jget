@@ -24,6 +24,7 @@ public class DownloadManager {
 
     public static ThreadPoolTaskExecutor taskExecutor;
     public static List<Future<?>> runningTasks;
+    public static int processedLinks;
 
     public DownloadManager() {
 
@@ -34,15 +35,27 @@ public class DownloadManager {
 
     public void commenceDownload() {
 
+        processedLinks = 0;
+        
         logger.info(DownloadConfig.LINE_BREAK);
         logger.info("Beginning download");
         logger.info(DownloadConfig.LINE_BREAK);
+
         while (!ManifestProvider.getManifest().getFrontier().isEmpty()) {
 
+            if(processedLinks > DownloadConfig.MAX_TOTAL_LINKS)
+            {
+                logger.info("The maximum number of links have been processed: {}", DownloadConfig.MAX_TOTAL_LINKS);
+                break;
+            }
+            
+            processedLinks++;
+            
             logger.info("Total threads running: {}", taskExecutor.getActiveCount());
             logger.info("Total size of frontier: {}", ManifestProvider.getManifest().getFrontier().size());
             logger.info("Total size of linkMap: {}", ManifestProvider.getManifest().getLinkMap().size());
-
+            logger.info("Total links processed: {}", processedLinks);
+            
             ReferencedURL referencedURL = ManifestProvider.getManifest().getFrontier().poll();
 
             if (UrlUtils.hasLinkBeenProcessed(referencedURL.getURL())) {
@@ -69,7 +82,7 @@ public class DownloadManager {
             while (urlAnalyserResult.isRedirect()) {
 
                 redirectIndex++;
-                if (redirectIndex > DownloadConfig.REDIRECT_DEPTH) {
+                if (redirectIndex > DownloadConfig.MAX_REDIRECT_DEPTH) {
                     logger.info("Exceeded redirect depth");
                     brokenRedirect = true;
                     break;
