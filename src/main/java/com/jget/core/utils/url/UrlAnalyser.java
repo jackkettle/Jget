@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,10 @@ public class UrlAnalyser {
 
             urlAnalysisResult.setResponseCode(connection.getResponseCode());
 
+            if (urlAnalysisResult.getResponseCode() == HttpStatus.SC_NOT_FOUND) {
+                return urlAnalysisResult;
+            }
+            
             if (urlAnalysisResult.isRedirect()) {
                 urlAnalysisResult.setLocation(connection.getHeaderField(HttpHeaders.LOCATION));
                 urlAnalysisResult.setValidLink(true);
