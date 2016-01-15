@@ -8,7 +8,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +15,11 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
-import com.jget.core.download.DownloadConfig;
 import com.jget.core.download.DownloadManager;
 import com.jget.core.download.ReferencedURL;
 import com.jget.core.linkresolver.LinkResolverManager;
+import com.jget.core.report.Report;
+import com.jget.core.report.ReportProvider;
 import com.jget.core.spring.ApplicationContextProvider;
 import com.jget.core.utils.url.UrlUtils;
 
@@ -28,9 +28,9 @@ public class JgetApplication {
 
     private static final Path ROOT_DIR = Paths.get("D:\\Jget_Sites");
 
-    public static final ImmutableSet<String> URL_SEEDS = ImmutableSet.of("www.terminalfour.com", "www-cdn.terminalfour.com");
+    public static final ImmutableSet<String> URL_SEEDS = ImmutableSet.of("www.teagasc.ie");
 
-    public static final ImmutableSet<String> URL_STRING = ImmutableSet.of("http://www.terminalfour.com/");
+    public static final ImmutableSet<String> URL_STRING = ImmutableSet.of("http://www.teagasc.ie/");
 
     public static void main(String[] args) throws IOException {
 
@@ -53,6 +53,8 @@ public class JgetApplication {
         manifest.setRootDir(ROOT_DIR);
         manifest.getRootUrls().addAll(URL_STRING);
 
+        ReportProvider.setReportSet(new Report());
+        
         URI urlSeedUri = null;
         for (String urlString : URL_SEEDS) {
             try {
@@ -102,12 +104,16 @@ public class JgetApplication {
                 return;
             }
         }
-
+        
         DownloadManager downloadManager = new DownloadManager();
         downloadManager.commenceDownload();
 
         LinkResolverManager linkResolverManager = new LinkResolverManager();
         linkResolverManager.commenceResolving();
+        
+        logger.info(ReportProvider.getReportSummaryString());
+        
+        
     }
 
     private void addUrlToSeeds(URL url) {

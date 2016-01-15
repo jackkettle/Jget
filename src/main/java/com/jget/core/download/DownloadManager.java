@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.jget.core.ManifestProvider;
+import com.jget.core.report.ReportConstants;
+import com.jget.core.report.ReportProvider;
+import com.jget.core.report.ReportUtils;
 import com.jget.core.spring.ApplicationContextProvider;
 import com.jget.core.utils.url.UrlAnalyser;
 import com.jget.core.utils.url.UrlAnalysisResult;
@@ -67,6 +70,8 @@ public class DownloadManager {
 
             if (!urlAnalyserResult.isValidLink()) {
                 logger.info("Invalid link: {}\n", referencedURL.getURL());
+                int reportType = ReportUtils.getReportTypeFromResponseCode(urlAnalyserResult.getResponseCode());
+                ReportProvider.getReport().addEntry(reportType, referencedURL.getLocation(), referencedURL.getURL().toString());
                 continue;
             }
             
@@ -77,6 +82,7 @@ public class DownloadManager {
 
             int redirectIndex = 0;
             boolean brokenRedirect = false;
+            boolean exceedRedirectMax = false;
             boolean processedLink = false;
             URL originalUrl = referencedURL.getURL();
             while (urlAnalyserResult.isRedirect()) {
@@ -84,7 +90,7 @@ public class DownloadManager {
                 redirectIndex++;
                 if (redirectIndex > DownloadConfig.MAX_REDIRECT_DEPTH) {
                     logger.info("Exceeded redirect depth");
-                    brokenRedirect = true;
+                    exceedRedirectMax = true;
                     break;
                 }
 
@@ -101,6 +107,10 @@ public class DownloadManager {
                     break;
                 }
                 referencedURL.setURL(urlAnalyserResult.getURL());
+            }
+            if (exceedRedirectMax) {
+                logger.info("Too many redirects from original Url: {}", originalUrl.toString());
+                continue;
             }
             if (brokenRedirect) {
                 logger.info("Broken redirect from original Url: {}", originalUrl.toString());
