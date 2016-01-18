@@ -46,9 +46,17 @@ public class DownloadManager {
 
         while (!ManifestProvider.getManifest().getFrontier().isEmpty()) {
 
-            if(processedLinks > DownloadConfig.MAX_TOTAL_LINKS)
+            if(ManifestProvider.getManifest().getFileCount().get() >= DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES)
             {
-                logger.info("The maximum number of links have been processed: {}", DownloadConfig.MAX_TOTAL_LINKS);
+                logger.info("The maximum number of files have been downloaded: {}", DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES);
+                waitForTasksToComplete();
+                break;
+            }
+            
+            if(processedLinks > DownloadConfig.MAX_TOTAL_PROCESSED_LINKS)
+            {
+                logger.info("The maximum number of links have been processed: {}", DownloadConfig.MAX_TOTAL_PROCESSED_LINKS);
+                waitForTasksToComplete();
                 break;
             }
             
@@ -77,6 +85,7 @@ public class DownloadManager {
             
             if(UrlUtils.exceedsUrlDepth(urlAnalyserResult.getURL())){
                 logger.info("The following URL is too deep: {}", referencedURL.getURL());
+                ReportProvider.getReport().addEntry(ReportConstants.TOO_MANY_REDIRECTS, referencedURL.getLocation(), referencedURL.getURL().toString());
                 continue;
             }
 
@@ -124,6 +133,8 @@ public class DownloadManager {
             logger.info("Processing url: {}", referencedURL.getURL().toString());
             logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
 
+            ManifestProvider.getManifest().getFileCount().incrementAndGet();
+            
             if (urlAnalyserResult.getContentType().getMimeType().equals(ContentType.TEXT_HTML.getMimeType())) {
                 DownloadPageTask downloadPageTask = new DownloadPageTask(referencedURL);
                 runningTasks.add(taskExecutor.submit(downloadPageTask));
