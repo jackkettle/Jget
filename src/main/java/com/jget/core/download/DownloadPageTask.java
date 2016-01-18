@@ -35,6 +35,10 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 
         Optional<File> mediaFile = saveFileFromURL(this.getReferencedURL().getURL());
 
+        logger.info("Saved file 1: {}", mediaFile.get().toPath());
+        logger.info("Saved file 2: {}", this.getReferencedURL().getURL());
+
+        
         if (!mediaFile.isPresent()) {
             logger.info("Failed to download file form url: {}", this.getReferencedURL().getURL());
             logger.info("Failed file origin url: {}", this.getReferencedURL().getLocation());
@@ -47,9 +51,6 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         if(staticLinkWrapper.isPresent())
             ManifestProvider.getManifest().getFileMap().put(mediaFile.get().toPath(), staticLinkWrapper.get());
         
-        
-        logger.info("Testing something out: {}", this.getReferencedURL().getURL());
-
         Document document = null;
         try {
             document = Jsoup.parse(mediaFile.get(), "UTF-8");

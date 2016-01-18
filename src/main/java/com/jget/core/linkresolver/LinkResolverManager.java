@@ -49,7 +49,6 @@ public class LinkResolverManager {
             Optional<Document> documentWrapper = processFile(file);
 
             if (documentWrapper.isPresent()) {
-                logger.debug("Updating file {}\n", file.toString());
                 updateFile(file, documentWrapper.get());
             }
 
@@ -60,7 +59,7 @@ public class LinkResolverManager {
         
         URL baseURL = ManifestProvider.getManifest().getFileMap().get(file);
         if(baseURL == null){
-            logger.info("Failed to resolve links in file: {}", file);
+            logger.info("Failed to resolve links in file: {}\n", file);
             return Optional.empty();
         }
         
@@ -93,7 +92,7 @@ public class LinkResolverManager {
                 linkElement.attr("href", relativePathString);
         }
 
-        logger.info("Links fixed / Total links: {} / {}\n", count,linkElements.size());
+        logger.info("Links fixed / Total links: {} / {}", count,linkElements.size());
         
         if (fileModified){
             return Optional.of(documnent);
@@ -112,13 +111,13 @@ public class LinkResolverManager {
         if(StringUtils.isEmpty(linkPathString))
             return Optional.empty();
         
-        logger.info("Url in link: {}", linkPathString);
+        logger.debug("Url in link: {}", linkPathString);
         
         Optional<URI> uriWrapper = UrlUtils.normalizeLink(linkPathString, baseURL);
         if(!uriWrapper.isPresent())
             return Optional.empty();
         
-        logger.info("Normalized link: {}", uriWrapper.get().toString());
+        logger.debug("Normalized link: {}", uriWrapper.get().toString());
         URL urlFromMap = null;
         try {
             urlFromMap = uriWrapper.get().toURL();
@@ -128,15 +127,13 @@ public class LinkResolverManager {
         }
         
         Path linkPath = ManifestProvider.getManifest().getLinkMap().get(urlFromMap);
-        
-        logger.info("Testing: {}", linkPath);
-        
+
         if (linkPath == null){
-            logger.info("No path found for link: {}", uriWrapper.get().toString());
+            logger.debug("No path found for link: {}", uriWrapper.get().toString());
             return Optional.empty();
         }
             
-        logger.info("Found path: {}", linkPath.toString());
+        logger.debug("Found path: {}", linkPath.toString());
         
         return Optional.of(linkPath);
     }
@@ -147,12 +144,12 @@ public class LinkResolverManager {
         InputStream documentStream = new ByteArrayInputStream(document.toString().getBytes(StandardCharsets.UTF_8));
 
         if (htmlFile.isDirectory()) {
-            logger.info("File is a directory, skipping: {}", file.toString());
+            logger.debug("File is a directory, skipping: {}", file.toString());
             return;
         }
 
         try {
-            logger.info("Saving file: {}", htmlFile.toString());
+            logger.info("Saving file: {}\n", htmlFile.toString());
             Files.copy(documentStream, htmlFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             logger.error("Unable to update file {}", htmlFile.toString(), e);

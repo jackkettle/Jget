@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,8 @@ public class Manifest {
     private HashMap<URL, Path> linkMap;
     
     private HashMap<Path, URL> fileMap;
+    
+    private AtomicInteger fileCount;
 
     public boolean validate() {
 
@@ -60,6 +63,7 @@ public class Manifest {
         this.frontier = new ConcurrentLinkedQueue<ReferencedURL>();
         this.linkMap = new HashMap<URL, Path>();
         this.fileMap = new HashMap<Path, URL>();
+        this.setFileCount(new AtomicInteger(0));
     }
 
     public List<URI> getSeeds() {
@@ -110,6 +114,14 @@ public class Manifest {
 
     public void setFileMap(HashMap<Path, URL> fileMap) {
         this.fileMap = fileMap;
+    }
+
+    public AtomicInteger getFileCount() {
+        return fileCount;
+    }
+
+    public void setFileCount(AtomicInteger fileCount) {
+        this.fileCount = fileCount;
     }
 
 }

@@ -8,6 +8,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ public class JgetApplication {
         manifest.setRootDir(ROOT_DIR);
         manifest.getRootUrls().addAll(URL_STRING);
 
-        ReportProvider.setReportSet(new Report());
+        ReportProvider.setReport(new Report());
         
         URI urlSeedUri = null;
         for (String urlString : URL_SEEDS) {
@@ -111,8 +112,11 @@ public class JgetApplication {
         LinkResolverManager linkResolverManager = new LinkResolverManager();
         linkResolverManager.commenceResolving();
         
-        logger.info(ReportProvider.getReportSummaryString());
+        ReportProvider.printReportSummaryString();
         
+        for(Map.Entry<Path, URL> entry: ManifestProvider.getManifest().getFileMap().entrySet() ){
+            logger.info("{} - {}", entry.getKey(), entry.getValue());
+        }
         
     }
 
