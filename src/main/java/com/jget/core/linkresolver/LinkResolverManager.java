@@ -59,7 +59,7 @@ public class LinkResolverManager {
         
         URL baseURL = ManifestProvider.getManifest().getFileMap().get(file);
         if(baseURL == null){
-            logger.info("Failed to resolve links in file: {}\n", file);
+            logger.info("Failed to resolve links in file, no baseURL: {}\n", file);
             return Optional.empty();
         }
         
@@ -92,7 +92,10 @@ public class LinkResolverManager {
                 linkElement.attr("href", relativePathString);
         }
 
-        logger.info("Links fixed / Total links: {} / {}", count,linkElements.size());
+        Elements approvedLinkElements = UrlUtils.getApprovedURLs(linkElements, baseURL);
+        
+        logger.info("Links fixed / Total approved links: {} / {}", count, approvedLinkElements.size());
+        logger.info("Total links: {}", linkElements.size());
         
         if (fileModified){
             return Optional.of(documnent);
@@ -118,6 +121,12 @@ public class LinkResolverManager {
             return Optional.empty();
         
         logger.debug("Normalized link: {}", uriWrapper.get().toString());
+        
+        if (!UrlUtils.doesLinkContainSeed(uriWrapper.get().toString())) {
+            logger.debug("Invalid link - not a seed host: {}", uriWrapper.get().toString());
+            return Optional.empty();
+        }
+        
         URL urlFromMap = null;
         try {
             urlFromMap = uriWrapper.get().toURL();

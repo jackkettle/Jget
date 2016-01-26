@@ -34,10 +34,6 @@ public class DownloadPageTask implements Runnable, DownloadTask {
     public void run() {
 
         Optional<File> mediaFile = saveFileFromURL(this.getReferencedURL().getURL());
-
-        logger.info("Saved file 1: {}", mediaFile.get().toPath());
-        logger.info("Saved file 2: {}", this.getReferencedURL().getURL());
-
         
         if (!mediaFile.isPresent()) {
             logger.info("Failed to download file form url: {}", this.getReferencedURL().getURL());

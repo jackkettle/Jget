@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.validator.routines.EmailValidator;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -140,9 +142,9 @@ public class UrlUtils {
         }
 
         int count = 0;
-        if(!relativePath.endsWith("/"))
+        if (!relativePath.endsWith("/"))
             count = -1;
-            
+
         for (String node : relativePath.split("/")) {
             if (StringUtils.isEmpty(node))
                 continue;
@@ -155,7 +157,7 @@ public class UrlUtils {
 
         return false;
     }
-    
+
     private static Optional<String> handleNonAbsoluteLink(URI uri, URL baseUrl) {
 
         if (uri.toString().startsWith("/")) {
@@ -209,14 +211,7 @@ public class UrlUtils {
         Optional<String> fullURI = null;
 
         if (uri.isAbsolute()) {
-
-            if (!UrlUtils.doesLinkContainSeed(uri.toString())) {
-                logger.debug("Invalid link - not a seed host: {}", uri.toString());
-                return Optional.empty();
-            }
-
             fullURI = Optional.of(uri.toString());
-
         } else {
             fullURI = handleNonAbsoluteLink(uri, baseUrl);
         }
@@ -234,28 +229,52 @@ public class UrlUtils {
         return Optional.of(uri);
 
     }
-    
-    public static Optional<URL> convertDynamicLinkToStatic(URL dynamicLink){
-        
+
+    public static Optional<URL> convertDynamicLinkToStatic(URL dynamicLink) {
+
         String urlString = dynamicLink.toString();
         String lastFragment = urlString.substring(urlString.lastIndexOf("/") + 1, urlString.length());
         String remainingUrl = urlString.substring(0, urlString.lastIndexOf("/") + 1);
 
-        if(urlString.contains("?"))
+        if (urlString.contains("?"))
             lastFragment = lastFragment.substring(0, lastFragment.lastIndexOf("?"));
 
         String staticString = remainingUrl + lastFragment;
-        
+
         try {
             return Optional.of(new URL(staticString));
         } catch (MalformedURLException e) {
             logger.error("Issue with following link: {}", staticString, e);
             return Optional.empty();
         }
-        
+
     }
 
-
     private static final Logger logger = LoggerFactory.getLogger(UrlUtils.class);
+
+    public static Elements getApprovedURLs(Elements linkElements, URL baseURL) {
+
+        Elements approvedLinkElements = new Elements();
+
+        for (Element linkElement : linkElements) {
+            String linkPathString = linkElement.attr("href");
+
+            if (StringUtils.isEmpty(linkPathString))
+                linkPathString = linkElement.attr("src");
+
+            if (StringUtils.isEmpty(linkPathString))
+                continue;
+
+            Optional<URI> uriWrapper = UrlUtils.normalizeLink(linkPathString, baseURL);
+            if (!uriWrapper.isPresent())
+                continue;
+
+            if (UrlUtils.doesLinkContainSeed(uriWrapper.get().toString())) {
+                approvedLinkElements.add(linkElement);
+            }
+        }
+
+        return approvedLinkElements;
+    }
 
 }

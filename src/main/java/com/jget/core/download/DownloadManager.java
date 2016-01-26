@@ -39,34 +39,32 @@ public class DownloadManager {
     public void commenceDownload() {
 
         processedLinks = 0;
-        
+
         logger.info(DownloadConfig.LINE_BREAK);
         logger.info("Beginning download");
         logger.info(DownloadConfig.LINE_BREAK);
 
         while (!ManifestProvider.getManifest().getFrontier().isEmpty()) {
 
-            if(ManifestProvider.getManifest().getFileCount().get() >= DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES)
-            {
+            if (ManifestProvider.getManifest().getFileCount().get() >= DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES) {
                 logger.info("The maximum number of files have been downloaded: {}", DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES);
                 waitForTasksToComplete();
                 break;
             }
-            
-            if(processedLinks > DownloadConfig.MAX_TOTAL_PROCESSED_LINKS)
-            {
+
+            if (processedLinks > DownloadConfig.MAX_TOTAL_PROCESSED_LINKS) {
                 logger.info("The maximum number of links have been processed: {}", DownloadConfig.MAX_TOTAL_PROCESSED_LINKS);
                 waitForTasksToComplete();
                 break;
             }
-            
+
             processedLinks++;
-            
+
             logger.info("Total threads running: {}", taskExecutor.getActiveCount());
             logger.info("Total size of frontier: {}", ManifestProvider.getManifest().getFrontier().size());
             logger.info("Total size of linkMap: {}", ManifestProvider.getManifest().getLinkMap().size());
             logger.info("Total links processed: {}", processedLinks);
-            
+
             ReferencedURL referencedURL = ManifestProvider.getManifest().getFrontier().poll();
 
             if (UrlUtils.hasLinkBeenProcessed(referencedURL.getURL())) {
@@ -82,10 +80,11 @@ public class DownloadManager {
                 ReportProvider.getReport().addEntry(reportType, referencedURL.getLocation(), referencedURL.getURL().toString());
                 continue;
             }
-            
-            if(UrlUtils.exceedsUrlDepth(urlAnalyserResult.getURL())){
+
+            if (UrlUtils.exceedsUrlDepth(urlAnalyserResult.getURL())) {
                 logger.info("The following URL is too deep: {}", referencedURL.getURL());
-                ReportProvider.getReport().addEntry(ReportConstants.TOO_MANY_REDIRECTS, referencedURL.getLocation(), referencedURL.getURL().toString());
+                ReportProvider.getReport().addEntry(ReportConstants.TOO_MANY_REDIRECTS, referencedURL.getLocation(),
+                        referencedURL.getURL().toString());
                 continue;
             }
 
@@ -134,7 +133,7 @@ public class DownloadManager {
             logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
 
             ManifestProvider.getManifest().getFileCount().incrementAndGet();
-            
+
             if (urlAnalyserResult.getContentType().getMimeType().equals(ContentType.TEXT_HTML.getMimeType())) {
                 DownloadPageTask downloadPageTask = new DownloadPageTask(referencedURL);
                 runningTasks.add(taskExecutor.submit(downloadPageTask));
@@ -167,7 +166,8 @@ public class DownloadManager {
 
         for (Future<?> future : runningTasks) {
             try {
-                future.get();
+                if (!future.isDone())
+                    future.get();
             } catch (InterruptedException | NoSuchElementException | ExecutionException e) {
                 logger.error("Failed to get info: {}", future.toString(), e);
             }
@@ -194,7 +194,6 @@ public class DownloadManager {
 
     }
 
-    
     private static final Logger logger = LoggerFactory.getLogger(DownloadManager.class);
 
 }

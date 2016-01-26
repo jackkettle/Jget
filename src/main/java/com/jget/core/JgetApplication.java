@@ -55,7 +55,7 @@ public class JgetApplication {
         manifest.getRootUrls().addAll(URL_STRING);
 
         ReportProvider.setReport(new Report());
-        
+
         URI urlSeedUri = null;
         for (String urlString : URL_SEEDS) {
             try {
@@ -105,19 +105,15 @@ public class JgetApplication {
                 return;
             }
         }
-        
+
         DownloadManager downloadManager = new DownloadManager();
         downloadManager.commenceDownload();
 
         LinkResolverManager linkResolverManager = new LinkResolverManager();
         linkResolverManager.commenceResolving();
-        
+
         ReportProvider.printReportSummaryString();
-        
-        for(Map.Entry<Path, URL> entry: ManifestProvider.getManifest().getFileMap().entrySet() ){
-            logger.info("{} - {}", entry.getKey(), entry.getValue());
-        }
-        
+
     }
 
     private void addUrlToSeeds(URL url) {

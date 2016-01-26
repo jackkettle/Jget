@@ -2,13 +2,21 @@ package com.jget.core.utils.url;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import javax.activation.MimetypesFileTypeMap;
+
+import org.apache.commons.io.FilenameUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 public class UrlAnalyser {
 
@@ -31,14 +39,20 @@ public class UrlAnalyser {
             if (urlAnalysisResult.getResponseCode() == HttpStatus.SC_NOT_FOUND) {
                 return urlAnalysisResult;
             }
-            
+
             if (urlAnalysisResult.isRedirect()) {
                 urlAnalysisResult.setLocation(connection.getHeaderField(HttpHeaders.LOCATION));
                 urlAnalysisResult.setValidLink(true);
                 return urlAnalysisResult;
             }
 
-            urlAnalysisResult.setContentType(ContentType.parse(connection.getContentType()));
+            if (connection.getContentType() != null) {
+                urlAnalysisResult.setContentType(ContentType.parse(connection.getContentType()));
+            } else {
+                String fileName = FilenameUtils.getName(url.toString());
+                MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fileName);
+            }
+
             urlAnalysisResult.setFileSize(connection.getContentLength());
             urlAnalysisResult.setValidLink(true);
 
