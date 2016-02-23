@@ -94,8 +94,7 @@ public class LinkResolverManager {
 
         Elements approvedLinkElements = UrlUtils.getApprovedURLs(linkElements, baseURL);
         
-        logger.info("Links fixed / Total approved links: {} / {}", count, approvedLinkElements.size());
-        logger.info("Total links: {}", linkElements.size());
+        logger.info("Fixed links | Approved links | Total links - {} | {} | {}\n", count, approvedLinkElements.size(), linkElements.size());
         
         if (fileModified){
             return Optional.of(documnent);

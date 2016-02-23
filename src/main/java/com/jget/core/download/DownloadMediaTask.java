@@ -3,6 +3,7 @@ package com.jget.core.download;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -36,14 +37,23 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
 
     public Optional<File> saveFileFromURL(URL url) {
 
-        Path seedPath = ManifestProvider.getManifest().getRootDir().resolve(url.getHost());
-
-        if (!FileSystemUtils.pathExists(seedPath)) {
-            logger.error("Seed path for url does not exist: {}", seedPath);
+        boolean containsSeed = false;
+        String urlSeed = url.getHost () + url.getPath ();
+        for(URI seedString: ManifestProvider.getManifest().getSeeds()){
+            
+            if(urlSeed.startsWith(seedString.toString()))
+                containsSeed = true;
+            
+            
+        }
+        
+        
+        if (!containsSeed) {
+            logger.error("Seed path for url does not exist: {}", urlSeed);
             return Optional.empty();
         }
-
-        logger.info("Seed path: {}", seedPath);
+        
+        Path seedPath = ManifestProvider.getManifest().getRootDir().resolve(url.getHost());
         String filePath = url.getFile();
         
         if(filePath.startsWith("/"))

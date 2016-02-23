@@ -13,13 +13,10 @@ public class ManifestProvider {
     }
 
     public String getReportSummary() {
-
+        
         StringBuilder summary = new StringBuilder();
-
-        
-        
         return summary.toString();
-        
+
     }
 
 }

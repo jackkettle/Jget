@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.jget.core.Manifest;
 import com.jget.core.ManifestProvider;
 import com.jget.core.utils.file.FileSystemUtils;
 import com.jget.core.utils.html.HtmlAnalyser;
@@ -33,6 +34,9 @@ public class DownloadPageTask implements Runnable, DownloadTask {
     @Override
     public void run() {
 
+        logger.info("Downloading link: {}", this.getReferencedURL().getURL());
+        logger.info("Found on page at: {}", this.getReferencedURL().getLocation());
+        
         Optional<File> mediaFile = saveFileFromURL(this.getReferencedURL().getURL());
         
         if (!mediaFile.isPresent()) {
@@ -81,14 +85,23 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 
     public Optional<File> saveFileFromURL(URL url) {
 
-        Path seedPath = ManifestProvider.getManifest().getRootDir().resolve(url.getHost());
-
-        if (!FileSystemUtils.pathExists(seedPath)) {
-            logger.error("Seed path for url does not exist: {}", seedPath);
+        boolean containsSeed = false;
+        String urlSeed = url.getHost () + url.getPath ();
+        for(URI seedString: ManifestProvider.getManifest().getSeeds()){
+            
+            if(urlSeed.startsWith(seedString.toString()))
+                containsSeed = true;
+            
+            
+        }
+        
+        
+        if (!containsSeed) {
+            logger.error("Seed path for url does not exist: {}", urlSeed);
             return Optional.empty();
         }
-
-        logger.info("Seed path: {}", seedPath);
+        
+        Path seedPath = ManifestProvider.getManifest().getRootDir().resolve(url.getHost());
         
         String filePath = UrlUtils.getFilePathFromURL(url, seedPath);
         

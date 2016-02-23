@@ -8,7 +8,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,11 +26,13 @@ import com.jget.core.utils.url.UrlUtils;
 @Component
 public class JgetApplication {
 
+    private static final String PROJECT_NAME = "JgetDevProject";
+    
     private static final Path ROOT_DIR = Paths.get("D:\\Jget_Sites");
 
-    public static final ImmutableSet<String> URL_SEEDS = ImmutableSet.of("twitter.com");
+    public static final ImmutableSet<String> URL_SEEDS = ImmutableSet.of("www.teagasc.ie/publications/");
 
-    public static final ImmutableSet<String> URL_STRING = ImmutableSet.of("https://twitter.com/");
+    public static final ImmutableSet<String> URL_STRING = ImmutableSet.of("http://www.teagasc.ie/publications/PublicationsBy_T4.aspx");
 
     public static void main(String[] args) throws IOException {
 
@@ -51,9 +52,11 @@ public class JgetApplication {
 
     private void mainMethod() {
         Manifest manifest = new Manifest();
+        manifest.setName(PROJECT_NAME);
         manifest.setRootDir(ROOT_DIR);
+        manifest.configureRootDir();
         manifest.getRootUrls().addAll(URL_STRING);
-
+        
         ReportProvider.setReport(new Report());
 
         URI urlSeedUri = null;

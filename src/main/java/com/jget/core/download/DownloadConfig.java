@@ -8,7 +8,7 @@ public class DownloadConfig {
 
     public static final int MAX_TOTAL_PROCESSED_LINKS = 100000;
 
-    public static final int MAX_TOTAL_DOWNLOADED_FILES = 1000;
+    public static final int MAX_TOTAL_DOWNLOADED_FILES = 5000;
 
     public static final String HTTP = "http";
 

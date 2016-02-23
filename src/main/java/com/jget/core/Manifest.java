@@ -1,5 +1,6 @@
 package com.jget.core;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -11,12 +12,15 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.jget.core.download.ReferencedURL;
 
 public class Manifest {
+
+    private String name;
 
     private Path rootDir;
 
@@ -36,6 +40,11 @@ public class Manifest {
 
     public boolean validate() {
 
+        if (StringUtils.isEmpty(name)) {
+            logger.info("No name have been set");
+            return false;
+        }
+        
         if (rootDir == null) {
             logger.info("The rootDir has not been set");
             return false;
@@ -61,6 +70,7 @@ public class Manifest {
 
     public Manifest() {
         super();
+        this.name = "";
         this.rootUrls = new ArrayList<String>();
         this.seeds = new ArrayList<URI>();
         this.frontier = new ConcurrentLinkedQueue<ReferencedURL>();
@@ -134,6 +144,25 @@ public class Manifest {
 
     public void setUniqueIDs(HashSet<String> uniqueIDs) {
         this.uniqueIDs = uniqueIDs;
+    }
+    
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void configureRootDir() {
+        this.rootDir = this.rootDir.resolve(this.name);
+        
+        try {
+            Files.createDirectories(this.rootDir);
+        } catch (IOException e) {
+            return;
+        }
+        
     }
 
 }
