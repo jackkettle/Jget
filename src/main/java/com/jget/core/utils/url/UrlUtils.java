@@ -4,10 +4,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -18,6 +21,7 @@ import org.springframework.util.StringUtils;
 import com.jget.core.ManifestProvider;
 import com.jget.core.download.DownloadConfig;
 import com.jget.core.download.ReferencedURL;
+import com.jget.core.utils.file.FileSystemUtils;
 
 public class UrlUtils {
 
@@ -277,4 +281,80 @@ public class UrlUtils {
         return approvedLinkElements;
     }
 
+    public static String generateDynamicFileName(String fileName) {
+
+        logger.info("Generating dynamic filename for {}", fileName);
+
+        String fileNameNoExtension = "";
+        String extension = "";
+        String staticFileName = "";
+
+        if (fileName.contains("?"))
+            staticFileName = fileName.substring(0, fileName.indexOf('?'));
+
+        if (fileName.contains("#"))
+            staticFileName = fileName.substring(0, fileName.indexOf('#'));
+
+        if (StringUtils.isEmpty(staticFileName))
+            staticFileName = DownloadConfig.DEFAULT_INDEX_FILENAME;
+
+        fileNameNoExtension = FilenameUtils.getBaseName(staticFileName);
+        extension = FilenameUtils.getExtension(staticFileName);
+
+        if (StringUtils.isEmpty(fileNameNoExtension))
+            extension = DownloadConfig.INDEX;
+
+        if (StringUtils.isEmpty(extension))
+            extension = DownloadConfig.DEFAULT_HTML_EXTENSION;
+
+        String returnString = "";
+
+        String uniqueHash = RandomStringUtils.randomAlphanumeric(DownloadConfig.FILENAME_DYMANIC_MARKER_LENGTH);
+
+        logger.info("Unique hash: {}", uniqueHash);
+
+        while (ManifestProvider.getManifest().getUniqueIDs().contains(uniqueHash)) {
+            uniqueHash = RandomStringUtils.randomAlphanumeric(DownloadConfig.FILENAME_DYMANIC_MARKER_LENGTH);
+            logger.info("Unique hash: {}", uniqueHash);
+        }
+
+        ManifestProvider.getManifest().getUniqueIDs().add(uniqueHash);
+
+        returnString = fileNameNoExtension + "-" + uniqueHash + "." + extension;
+        logger.info("Dynmaic name generated: {}", returnString);
+        return returnString;
+
+    }
+
+    public static String getFilePathFromURL(URL url, Path seedPath) {
+
+        String filePathString = url.getFile();
+
+        if (StringUtils.isEmpty(filePathString))
+            return DownloadConfig.DEFAULT_INDEX_FILENAME;
+
+        String filePathParentString = filePathString.substring(0, filePathString.lastIndexOf('/') + 1);
+        String fileName = filePathString.substring(filePathString.lastIndexOf('/') + 1, filePathString.length());
+
+        if (StringUtils.isEmpty(filePathParentString))
+            filePathParentString = DownloadConfig.DEFAULT_INDEX_FILENAME;
+
+        if (filePathParentString.startsWith("/"))
+            filePathParentString = filePathParentString.substring(1);
+
+        if (fileName.contains("?"))
+            fileName = generateDynamicFileName(fileName);
+
+        String fileExtension = FilenameUtils.getBaseName(fileName);
+
+        if (StringUtils.isEmpty(fileExtension) || !fileExtension.toLowerCase().equals(DownloadConfig.DEFAULT_HTML_EXTENSION))
+            fileExtension = DownloadConfig.DEFAULT_HTML_EXTENSION;
+
+        if (StringUtils.isEmpty(fileName))
+            fileName = DownloadConfig.INDEX;
+
+        String returnString = filePathParentString + fileName + "." + fileExtension;
+
+        return returnString;
+    }
 }

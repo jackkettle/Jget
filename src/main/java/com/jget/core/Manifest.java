@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,6 +29,8 @@ public class Manifest {
     private HashMap<URL, Path> linkMap;
     
     private HashMap<Path, URL> fileMap;
+    
+    private HashSet<String> uniqueIDs;
     
     private AtomicInteger fileCount;
 
@@ -64,6 +67,7 @@ public class Manifest {
         this.linkMap = new HashMap<URL, Path>();
         this.fileMap = new HashMap<Path, URL>();
         this.setFileCount(new AtomicInteger(0));
+        this.uniqueIDs = new HashSet<>();
     }
 
     public List<URI> getSeeds() {
@@ -122,6 +126,14 @@ public class Manifest {
 
     public void setFileCount(AtomicInteger fileCount) {
         this.fileCount = fileCount;
+    }
+
+    public HashSet<String> getUniqueIDs() {
+        return uniqueIDs;
+    }
+
+    public void setUniqueIDs(HashSet<String> uniqueIDs) {
+        this.uniqueIDs = uniqueIDs;
     }
 
 }

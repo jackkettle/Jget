@@ -81,12 +81,6 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 
     public Optional<File> saveFileFromURL(URL url) {
 
-        String fileName = "";
-
-        if (StringUtils.isEmpty(url.getFile()) || url.getFile().equals("/") || url.getFile().charAt(url.getFile().length() - 1) == '/') {
-            fileName = "index.html";
-        }
-
         Path seedPath = ManifestProvider.getManifest().getRootDir().resolve(url.getHost());
 
         if (!FileSystemUtils.pathExists(seedPath)) {
@@ -95,20 +89,12 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         }
 
         logger.info("Seed path: {}", seedPath);
-        String filePath = url.getFile() + fileName;
-
-        if (filePath.startsWith("/"))
-            filePath = filePath.substring(1);
-
-        if (filePath.startsWith("/"))
-            filePath = filePath.substring(1);
-
-        if (filePath.contains("?")) {
-            logger.info("Dynamic link found: {}", filePath);
-        }
-
-        logger.info("Relative path: {}", filePath);
-
+        
+        String filePath = UrlUtils.getFilePathFromURL(url, seedPath);
+        
+        if(StringUtils.isEmpty(filePath))
+            return Optional.empty();
+        
         Path fullFilePath = seedPath.resolve(filePath);
         logger.info("Creating path: {}", fullFilePath);
 

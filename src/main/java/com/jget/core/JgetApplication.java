@@ -29,9 +29,9 @@ public class JgetApplication {
 
     private static final Path ROOT_DIR = Paths.get("D:\\Jget_Sites");
 
-    public static final ImmutableSet<String> URL_SEEDS = ImmutableSet.of("www.teagasc.ie");
+    public static final ImmutableSet<String> URL_SEEDS = ImmutableSet.of("twitter.com");
 
-    public static final ImmutableSet<String> URL_STRING = ImmutableSet.of("http://www.teagasc.ie/");
+    public static final ImmutableSet<String> URL_STRING = ImmutableSet.of("https://twitter.com/");
 
     public static void main(String[] args) throws IOException {
 

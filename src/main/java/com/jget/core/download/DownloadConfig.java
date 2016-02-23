@@ -14,12 +14,18 @@ public class DownloadConfig {
 
     public static final String HTTPS = "https";
 
-    public static final String HTML_EXTENSION = "html";
+    public static final String DEFAULT_HTML_EXTENSION = "html";
+    
+    public static final String INDEX = "index";
 
     public static final String LINE_BREAK = "----------------------------";
 
     public static final String LINE_SEPERATOR = System.getProperty("line.separator");
 
     public static final int URL_DEPTH = 20;
+    
+    public static final int FILENAME_DYMANIC_MARKER_LENGTH = 5;
+
+    public static final String DEFAULT_INDEX_FILENAME = "index.html";
 
 }

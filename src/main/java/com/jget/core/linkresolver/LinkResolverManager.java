@@ -37,7 +37,7 @@ public class LinkResolverManager {
         
         List<Path> htmlFiles = null;
         try {
-            htmlFiles = FileSystemUtils.populateFilesList(ManifestProvider.getManifest().getRootDir(), DownloadConfig.HTML_EXTENSION);
+            htmlFiles = FileSystemUtils.populateFilesList(ManifestProvider.getManifest().getRootDir(), DownloadConfig.DEFAULT_HTML_EXTENSION);
         } catch (IOException e) {
             logger.info("Failed to populate file list", e);
             return;
