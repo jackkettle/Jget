@@ -21,7 +21,6 @@ import org.springframework.util.StringUtils;
 import com.jget.core.ManifestProvider;
 import com.jget.core.download.DownloadConfig;
 import com.jget.core.download.ReferencedURL;
-import com.jget.core.utils.file.FileSystemUtils;
 
 public class UrlUtils {
 

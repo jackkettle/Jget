@@ -36,9 +36,9 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 
         logger.info("Downloading link: {}", this.getReferencedURL().getURL());
         logger.info("Found on page at: {}", this.getReferencedURL().getLocation());
-        
+
         Optional<File> mediaFile = saveFileFromURL(this.getReferencedURL().getURL());
-        
+
         if (!mediaFile.isPresent()) {
             logger.info("Failed to download file form url: {}", this.getReferencedURL().getURL());
             logger.info("Failed file origin url: {}", this.getReferencedURL().getLocation());
@@ -46,11 +46,11 @@ public class DownloadPageTask implements Runnable, DownloadTask {
         }
 
         ManifestProvider.getManifest().getLinkMap().put(this.getReferencedURL().getURL(), mediaFile.get().toPath());
-        
+
         Optional<URL> staticLinkWrapper = UrlUtils.convertDynamicLinkToStatic(this.getReferencedURL().getURL());
-        if(staticLinkWrapper.isPresent())
+        if (staticLinkWrapper.isPresent())
             ManifestProvider.getManifest().getFileMap().put(mediaFile.get().toPath(), staticLinkWrapper.get());
-        
+
         Document document = null;
         try {
             document = Jsoup.parse(mediaFile.get(), "UTF-8");
@@ -86,28 +86,24 @@ public class DownloadPageTask implements Runnable, DownloadTask {
     public Optional<File> saveFileFromURL(URL url) {
 
         boolean containsSeed = false;
-        String urlSeed = url.getHost () + url.getPath ();
-        for(URI seedString: ManifestProvider.getManifest().getSeeds()){
-            
-            if(urlSeed.startsWith(seedString.toString()))
+        String urlSeed = url.getHost() + url.getPath();
+        for (URI seedString : ManifestProvider.getManifest().getSeeds()) {
+            if (urlSeed.startsWith(seedString.toString()))
                 containsSeed = true;
-            
-            
         }
-        
-        
+
         if (!containsSeed) {
             logger.error("Seed path for url does not exist: {}", urlSeed);
             return Optional.empty();
         }
-        
+
         Path seedPath = ManifestProvider.getManifest().getRootDir().resolve(url.getHost());
-        
+
         String filePath = UrlUtils.getFilePathFromURL(url, seedPath);
-        
-        if(StringUtils.isEmpty(filePath))
+
+        if (StringUtils.isEmpty(filePath))
             return Optional.empty();
-        
+
         Path fullFilePath = seedPath.resolve(filePath);
         logger.info("Creating path: {}", fullFilePath);
 

@@ -11,8 +11,9 @@ import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 
 import com.google.common.collect.ImmutableSet;
 import com.jget.core.download.DownloadManager;
@@ -23,7 +24,7 @@ import com.jget.core.report.ReportProvider;
 import com.jget.core.spring.ApplicationContextProvider;
 import com.jget.core.utils.url.UrlUtils;
 
-@Component
+@SpringBootApplication
 public class JgetApplication {
 
     private static final String PROJECT_NAME = "JgetDevProject";
@@ -36,9 +37,7 @@ public class JgetApplication {
 
     public static void main(String[] args) throws IOException {
 
-        String springConfigXml = "spring-config.xml";
-        logger.info("Configuring spring using {}", springConfigXml);
-        FileSystemXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext(springConfigXml);
+        ApplicationContext applicationContext = SpringApplication.run(JgetApplication.class, args);
         ApplicationContextProvider.resetApplicationContext(applicationContext);
 
         logger.info("Running component");
