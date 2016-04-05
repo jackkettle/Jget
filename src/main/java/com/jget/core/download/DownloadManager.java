@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import com.jget.core.ManifestProvider;
+import com.jget.core.manifest.ManifestProvider;
 import com.jget.core.report.ReportConstants;
 import com.jget.core.report.ReportProvider;
 import com.jget.core.report.ReportUtils;
@@ -30,7 +30,6 @@ public class DownloadManager {
     public static int processedLinks;
 
     public DownloadManager() {
-
         runningTasks = new ArrayList<Future<?>>();
         taskExecutor = (ThreadPoolTaskExecutor) ApplicationContextProvider.getBean(ThreadPoolTaskExecutor.class);
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
@@ -44,9 +43,9 @@ public class DownloadManager {
         logger.info("Beginning download");
         logger.info(DownloadConfig.LINE_BREAK);
 
-        while (!ManifestProvider.getManifest().getFrontier().isEmpty()) {
+        while (!ManifestProvider.getCurrentManifest().getFrontier().isEmpty()) {
 
-            if (ManifestProvider.getManifest().getFileCount().get() >= DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES) {
+            if (ManifestProvider.getCurrentManifest().getFileCount().get() >= DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES) {
                 logger.info("The maximum number of files have been downloaded: {}", DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES);
                 waitForTasksToComplete();
                 break;
@@ -61,11 +60,11 @@ public class DownloadManager {
             processedLinks++;
 
             logger.info("Total threads running: {}", taskExecutor.getActiveCount());
-            logger.info("Total size of frontier: {}", ManifestProvider.getManifest().getFrontier().size());
-            logger.info("Total size of linkMap: {}", ManifestProvider.getManifest().getLinkMap().size());
+            logger.info("Total size of frontier: {}", ManifestProvider.getCurrentManifest().getFrontier().size());
+            logger.info("Total size of linkMap: {}", ManifestProvider.getCurrentManifest().getLinkMap().size());
             logger.info("Total links processed: {}", processedLinks);
 
-            ReferencedURL referencedURL = ManifestProvider.getManifest().getFrontier().poll();
+            ReferencedURL referencedURL = ManifestProvider.getCurrentManifest().getFrontier().poll();
 
             if (UrlUtils.hasLinkBeenProcessed(referencedURL.getURL())) {
                 logger.info("Link has previously been processed: {}", referencedURL.getURL());
@@ -132,7 +131,7 @@ public class DownloadManager {
             logger.info("Processing url: {}", referencedURL.getURL().toString());
             logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
 
-            ManifestProvider.getManifest().getFileCount().incrementAndGet();
+            ManifestProvider.getCurrentManifest().getFileCount().incrementAndGet();
 
             if (urlAnalyserResult.getContentType().getMimeType().equals(ContentType.TEXT_HTML.getMimeType())) {
                 DownloadPageTask downloadPageTask = new DownloadPageTask(referencedURL);
@@ -142,7 +141,7 @@ public class DownloadManager {
                 runningTasks.add(taskExecutor.submit(downloadMediaTask));
             }
 
-            if (ManifestProvider.getManifest().getFrontier().isEmpty() && (taskExecutor.getActiveCount() > 0)) {
+            if (ManifestProvider.getCurrentManifest().getFrontier().isEmpty() && (taskExecutor.getActiveCount() > 0)) {
                 logger.info("No urls to process, Waiting for tasks to finish");
                 waitForTasksToComplete();
             }

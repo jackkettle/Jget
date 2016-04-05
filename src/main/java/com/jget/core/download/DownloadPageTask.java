@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.jget.core.Manifest;
-import com.jget.core.ManifestProvider;
+import com.jget.core.manifest.Manifest;
+import com.jget.core.manifest.ManifestProvider;
 import com.jget.core.utils.file.FileSystemUtils;
 import com.jget.core.utils.html.HtmlAnalyser;
 import com.jget.core.utils.html.HtmlUtils;
@@ -45,11 +45,11 @@ public class DownloadPageTask implements Runnable, DownloadTask {
             return;
         }
 
-        ManifestProvider.getManifest().getLinkMap().put(this.getReferencedURL().getURL(), mediaFile.get().toPath());
+        ManifestProvider.getCurrentManifest().getLinkMap().put(this.getReferencedURL().getURL(), mediaFile.get().toPath());
 
         Optional<URL> staticLinkWrapper = UrlUtils.convertDynamicLinkToStatic(this.getReferencedURL().getURL());
         if (staticLinkWrapper.isPresent())
-            ManifestProvider.getManifest().getFileMap().put(mediaFile.get().toPath(), staticLinkWrapper.get());
+            ManifestProvider.getCurrentManifest().getFileMap().put(mediaFile.get().toPath(), staticLinkWrapper.get());
 
         Document document = null;
         try {
@@ -79,7 +79,7 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 
         Set<ReferencedURL> newPageLinksUrl = UrlUtils.removeProcessReferencedLinks(referencedPageUrls);
         logger.info("Total new links found: {}\n", newPageLinksUrl.size());
-        ManifestProvider.getManifest().getFrontier().addAll(newPageLinksUrl);
+        ManifestProvider.getCurrentManifest().getFrontier().addAll(newPageLinksUrl);
 
     }
 
@@ -87,7 +87,7 @@ public class DownloadPageTask implements Runnable, DownloadTask {
 
         boolean containsSeed = false;
         String urlSeed = url.getHost() + url.getPath();
-        for (URI seedString : ManifestProvider.getManifest().getSeeds()) {
+        for (URI seedString : ManifestProvider.getCurrentManifest().getSeeds()) {
             if (urlSeed.startsWith(seedString.toString()))
                 containsSeed = true;
         }
@@ -97,7 +97,7 @@ public class DownloadPageTask implements Runnable, DownloadTask {
             return Optional.empty();
         }
 
-        Path seedPath = ManifestProvider.getManifest().getRootDir().resolve(url.getHost());
+        Path seedPath = ManifestProvider.getCurrentManifest().getRootDir().resolve(url.getHost());
 
         String filePath = UrlUtils.getFilePathFromURL(url, seedPath);
 

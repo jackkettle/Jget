@@ -1,4 +1,4 @@
-package com.jget.core;
+package com.jget.core.manifest;
 
 import java.io.IOException;
 import java.net.URI;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,12 +17,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.jget.core.download.ReferencedURL;
 
 public class Manifest {
 
+    private UUID id;
+    
     private String name;
 
+    @JsonIgnore
     private Path rootDir;
 
     private List<URI> seeds;
@@ -70,6 +75,7 @@ public class Manifest {
 
     public Manifest() {
         super();
+        setId(UUID.randomUUID());
         this.name = "";
         this.rootUrls = new ArrayList<String>();
         this.seeds = new ArrayList<URI>();
@@ -154,9 +160,16 @@ public class Manifest {
         this.name = name;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+    
     public void configureRootDir() {
         this.rootDir = this.rootDir.resolve(this.name);
-        
         try {
             Files.createDirectories(this.rootDir);
         } catch (IOException e) {
@@ -164,5 +177,4 @@ public class Manifest {
         }
         
     }
-
 }

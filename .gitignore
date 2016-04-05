@@ -14,3 +14,7 @@ target/*
 LinkResolver.iml
 .idea/*
 /target/
+
+#Frontend ignore rules
+/src/main/webapp/node_modules/
+/src/main/webapp/dist/

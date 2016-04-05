@@ -15,8 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.jget.core.ManifestProvider;
-import com.jget.core.utils.file.FileSystemUtils;
+import com.jget.core.manifest.ManifestProvider;
 
 @Component
 public class DownloadMediaTask implements Runnable, DownloadTask {
@@ -31,7 +30,7 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
             return;
         }
 
-        ManifestProvider.getManifest().getLinkMap().put(this.getReferencedURL().getURL(), mediaFile.get().toPath());
+        ManifestProvider.getCurrentManifest().getLinkMap().put(this.getReferencedURL().getURL(), mediaFile.get().toPath());
     
     }
 
@@ -39,7 +38,7 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
 
         boolean containsSeed = false;
         String urlSeed = url.getHost () + url.getPath ();
-        for(URI seedString: ManifestProvider.getManifest().getSeeds()){
+        for(URI seedString: ManifestProvider.getCurrentManifest().getSeeds()){
             
             if(urlSeed.startsWith(seedString.toString()))
                 containsSeed = true;
@@ -53,7 +52,7 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
             return Optional.empty();
         }
         
-        Path seedPath = ManifestProvider.getManifest().getRootDir().resolve(url.getHost());
+        Path seedPath = ManifestProvider.getCurrentManifest().getRootDir().resolve(url.getHost());
         String filePath = url.getFile();
         
         if(filePath.startsWith("/"))

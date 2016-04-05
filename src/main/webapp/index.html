@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base href="/">
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="dist/lib/angular2-polyfills.js"></script>
+  <script src="dist/lib/system.src.js"></script>
+  <script src="dist/lib/Rx.js"></script>
+  <script src="dist/lib/angular2.dev.js"></script>
+  <script src="dist/lib/router.dev.js"></script>
+  <script src="dist/lib/http.dev.js"></script>
+  
+  <script>
+      System.config({
+        packages: {
+          'dist/app': {
+            format: 'register',
+            defaultExtension: 'js'
+          },
+          'node-uuid': {
+            map: {
+              crypto: '@empty'
+            }
+          }
+        },
+        map: {
+          immutable: 'dist/lib/immutable.js',
+          'node-uuid': 'dist/lib/uuid.js'
+        }
+      });
+      System.import('dist/app/scripts/boot')
+            .then(null, console.error.bind(console));
+  </script> 
+</head>
+
+<body>
+  <my-app>Loading...</my-app>
+</body>
+
+</html>

@@ -22,8 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import com.jget.core.ManifestProvider;
 import com.jget.core.download.DownloadConfig;
+import com.jget.core.manifest.ManifestProvider;
 import com.jget.core.utils.file.FileSystemUtils;
 import com.jget.core.utils.url.UrlUtils;
 
@@ -37,7 +37,7 @@ public class LinkResolverManager {
         
         List<Path> htmlFiles = null;
         try {
-            htmlFiles = FileSystemUtils.populateFilesList(ManifestProvider.getManifest().getRootDir(), DownloadConfig.DEFAULT_HTML_EXTENSION);
+            htmlFiles = FileSystemUtils.populateFilesList(ManifestProvider.getCurrentManifest().getRootDir(), DownloadConfig.DEFAULT_HTML_EXTENSION);
         } catch (IOException e) {
             logger.info("Failed to populate file list", e);
             return;
@@ -57,7 +57,7 @@ public class LinkResolverManager {
 
     private Optional<Document> processFile(Path file) {
         
-        URL baseURL = ManifestProvider.getManifest().getFileMap().get(file);
+        URL baseURL = ManifestProvider.getCurrentManifest().getFileMap().get(file);
         if(baseURL == null){
             logger.info("Failed to resolve links in file, no baseURL: {}\n", file);
             return Optional.empty();
@@ -134,7 +134,7 @@ public class LinkResolverManager {
             return Optional.empty();
         }
         
-        Path linkPath = ManifestProvider.getManifest().getLinkMap().get(urlFromMap);
+        Path linkPath = ManifestProvider.getCurrentManifest().getLinkMap().get(urlFromMap);
 
         if (linkPath == null){
             logger.debug("No path found for link: {}", uriWrapper.get().toString());

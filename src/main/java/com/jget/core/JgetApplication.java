@@ -19,6 +19,8 @@ import com.google.common.collect.ImmutableSet;
 import com.jget.core.download.DownloadManager;
 import com.jget.core.download.ReferencedURL;
 import com.jget.core.linkresolver.LinkResolverManager;
+import com.jget.core.manifest.Manifest;
+import com.jget.core.manifest.ManifestProvider;
 import com.jget.core.report.Report;
 import com.jget.core.report.ReportProvider;
 import com.jget.core.spring.ApplicationContextProvider;
@@ -45,8 +47,8 @@ public class JgetApplication {
 
         application.mainMethod();
 
-        logger.info("Exiting application");
-        System.exit(0);
+        //logger.info("Exiting application");
+        //System.exit(0);
     }
 
     private void mainMethod() {
@@ -55,7 +57,7 @@ public class JgetApplication {
         manifest.setRootDir(ROOT_DIR);
         manifest.configureRootDir();
         manifest.getRootUrls().addAll(URL_STRING);
-        
+         
         ReportProvider.setReport(new Report());
 
         URI urlSeedUri = null;
@@ -76,16 +78,20 @@ public class JgetApplication {
             return;
         }
 
-        ManifestProvider.setManifest(manifest);
-
-        logger.info("Testing {} rootUrls", ManifestProvider.getManifest().getRootUrls().size());
-        for (String string : ManifestProvider.getManifest().getRootUrls()) {
+        ManifestProvider.setCurrentManifest(manifest);
+        ManifestProvider.getManifests().add(manifest);
+        
+        return; 
+        
+        /*
+        logger.info("Testing {} rootUrls", ManifestProvider.getCurrentManifest().getRootUrls().size());
+        for (String string : ManifestProvider.getCurrentManifest().getRootUrls()) {
             try {
                 URL url = new URL(string);
                 ReferencedURL referencedURL = new ReferencedURL();
                 referencedURL.setLocation("");
                 referencedURL.setURL(url);
-                ManifestProvider.getManifest().getFrontier().add(referencedURL);
+                ManifestProvider.getCurrentManifest().getFrontier().add(referencedURL);
                 addUrlToSeeds(url);
                 logger.info("Root Url passed: {}", string);
             } catch (MalformedURLException e) {
@@ -94,8 +100,8 @@ public class JgetApplication {
             }
         }
 
-        logger.info("Creating folders for {} seeds", ManifestProvider.getManifest().getSeeds().size());
-        for (URI uri : ManifestProvider.getManifest().getSeeds()) {
+        logger.info("Creating folders for {} seeds", ManifestProvider.getCurrentManifest().getSeeds().size());
+        for (URI uri : ManifestProvider.getCurrentManifest().getSeeds()) {
 
             logger.info("Creating folder for {}", uri.toString());
             Path seedPath = ROOT_DIR.resolve(uri.toString());
@@ -115,7 +121,7 @@ public class JgetApplication {
         linkResolverManager.commenceResolving();
 
         ReportProvider.printReportSummaryString();
-
+*/
     }
 
     private void addUrlToSeeds(URL url) {
@@ -124,7 +130,7 @@ public class JgetApplication {
             try {
                 uriSeed = new URI(url.getHost());
                 logger.info("Adding host to seeds: {}", uriSeed);
-                ManifestProvider.getManifest().getSeeds().add(uriSeed);
+                ManifestProvider.getCurrentManifest().getSeeds().add(uriSeed);
             } catch (URISyntaxException e) {
                 logger.error("Invalid seed Url: {}", uriSeed, e);
                 return;

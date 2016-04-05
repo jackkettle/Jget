@@ -18,9 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import com.jget.core.ManifestProvider;
 import com.jget.core.download.DownloadConfig;
 import com.jget.core.download.ReferencedURL;
+import com.jget.core.manifest.ManifestProvider;
 
 public class UrlUtils {
 
@@ -79,7 +79,7 @@ public class UrlUtils {
 
     public static boolean doesLinkContainSeed(String url) {
 
-        for (URI seed : ManifestProvider.getManifest().getSeeds()) {
+        for (URI seed : ManifestProvider.getCurrentManifest().getSeeds()) {
             if (url.contains(seed.toString())) {
                 return true;
             }
@@ -92,7 +92,7 @@ public class UrlUtils {
 
         Set<URL> newLinks = new HashSet<URL>();
         for (URL url : pageLinksUrl) {
-            if (!ManifestProvider.getManifest().getLinkMap().containsKey(url))
+            if (!ManifestProvider.getCurrentManifest().getLinkMap().containsKey(url))
                 newLinks.add(url);
         }
         return newLinks;
@@ -109,7 +109,7 @@ public class UrlUtils {
     }
 
     public static boolean hasLinkBeenProcessed(URL url) {
-        return ManifestProvider.getManifest().getLinkMap().containsKey(url);
+        return ManifestProvider.getCurrentManifest().getLinkMap().containsKey(url);
     }
 
     public static Optional<URL> getHostUrl(URL baseUrl) {
@@ -312,12 +312,12 @@ public class UrlUtils {
 
         logger.info("Unique hash: {}", uniqueHash);
 
-        while (ManifestProvider.getManifest().getUniqueIDs().contains(uniqueHash)) {
+        while (ManifestProvider.getCurrentManifest().getUniqueIDs().contains(uniqueHash)) {
             uniqueHash = RandomStringUtils.randomAlphanumeric(DownloadConfig.FILENAME_DYMANIC_MARKER_LENGTH);
             logger.info("Unique hash: {}", uniqueHash);
         }
 
-        ManifestProvider.getManifest().getUniqueIDs().add(uniqueHash);
+        ManifestProvider.getCurrentManifest().getUniqueIDs().add(uniqueHash);
 
         returnString = fileNameNoExtension + "-" + uniqueHash + "." + extension;
         logger.info("Dynmaic name generated: {}", returnString);

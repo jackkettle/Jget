@@ -3,9 +3,9 @@ package com.jget.core.report;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jget.core.Manifest;
-import com.jget.core.ManifestProvider;
 import com.jget.core.download.DownloadConfig;
+import com.jget.core.manifest.Manifest;
+import com.jget.core.manifest.ManifestProvider;
 
 public class ReportProvider {
 
@@ -21,7 +21,7 @@ public class ReportProvider {
 
     public static void printReportSummaryString() {
 
-        Manifest manifest = ManifestProvider.getManifest();
+        Manifest manifest = ManifestProvider.getCurrentManifest();
 
         logger.info(DownloadConfig.LINE_BREAK);
         logger.info("Download Report");
