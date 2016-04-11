@@ -23,4 +23,8 @@ export class DashboardComponent implements OnInit {
       () => console.log('Completed!')
     );
   }
+
+  gotoDetail(project: Project) {
+    this._router.navigate(['ProjectDetail', { id: project.id }]);
+  }
 }

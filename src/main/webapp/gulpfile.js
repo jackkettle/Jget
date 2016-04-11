@@ -7,6 +7,7 @@ const tslint = require('gulp-tslint');
 const browserSync = require('browser-sync');
 const reload = browserSync.reload;
 const tsconfig = require('tsconfig-glob');
+var sass = require('gulp-sass');
 
 // clean the contents of the distribution directory
 gulp.task('clean', function () {
@@ -14,13 +15,13 @@ gulp.task('clean', function () {
 });
 
 // copy static assets - i.e. non TypeScript compiled source
-gulp.task('copy:assets', ['clean'], function() {
-  return gulp.src(['app/**/*', 'index.html', 'styles.css', '!app/**/*.ts'], { base : './' })
+gulp.task('copy:assets', function() {
+  return gulp.src(['app/**/*', 'index.html', 'styles.css', '!app/**/*.ts', '!app/**/*.scss'], { base : './' })
     .pipe(gulp.dest('dist'))
 });
 
 // copy dependencies
-gulp.task('copy:libs', ['clean'], function() {
+gulp.task('copy:libs', function() {
   return gulp.src([
       'node_modules/angular2/bundles/http.dev.js',
       'node_modules/angular2/bundles/angular2-polyfills.js',
@@ -29,6 +30,7 @@ gulp.task('copy:libs', ['clean'], function() {
       'node_modules/angular2/bundles/angular2.dev.js',
       'node_modules/angular2/bundles/router.dev.js',
       'node_modules/node-uuid/uuid.js',
+      'node_modules/immutable/dist/immutable.js',
       'node_modules/immutable/dist/immutable.js'
     ])
     .pipe(gulp.dest('dist/lib'))
@@ -41,8 +43,15 @@ gulp.task('tslint', function() {
     .pipe(tslint.report('verbose'));
 });
 
+// sass
+gulp.task('sass', function () {
+  return gulp.src('app/styles/**/*.scss')
+    .pipe(sass().on('error', sass.logError))
+    .pipe(gulp.dest('dist/app/styles'));
+});
+
 // TypeScript compile
-gulp.task('compile', ['clean'], function () {
+gulp.task('compile', function () {
   return gulp
     .src(tscConfig.files)
     .pipe(sourcemaps.init())
@@ -74,6 +83,6 @@ gulp.task('watch', ['build'], function() {
   gulp.watch(['app/**/*', 'index.html', 'styles.css'], ['buildAndReload']);
 });
 
-gulp.task('build', ['tslint', 'compile', 'copy:libs', 'copy:assets']);
+gulp.task('build', ['clean', 'tslint', 'compile', 'sass', 'copy:libs', 'copy:assets']);
 gulp.task('buildAndReload', ['build'], reload);
 gulp.task('default', ['watch']);

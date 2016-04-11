@@ -1,8 +1,10 @@
-<h3>All Projects</h3>
+
+<h3 class="row">All Projects</h3>
 <div class="grid grid-pad">
 	<div *ngFor="#project of downloadProjects" class="col-1-4" (click)="gotoDetail(project)">
 		<div class="module hero">
 			<h4>{{project.name}}</h4>
+      <aside>{{project.id}}</aside>
 		</div>
 	</div>
 </div>

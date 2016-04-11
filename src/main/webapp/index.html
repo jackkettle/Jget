@@ -3,19 +3,22 @@
 
 <head>
   <base href="/">
-  <link rel="stylesheet" href="styles.css">
 
-  <script src="dist/lib/angular2-polyfills.js"></script>
-  <script src="dist/lib/system.src.js"></script>
-  <script src="dist/lib/Rx.js"></script>
-  <script src="dist/lib/angular2.dev.js"></script>
-  <script src="dist/lib/router.dev.js"></script>
-  <script src="dist/lib/http.dev.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="app/styles/main.css">
+
+  <script src="lib/angular2-polyfills.js"></script>
+  <script src="lib/system.src.js"></script>
+  <script src="lib/Rx.js"></script>
+  <script src="lib/angular2.dev.js"></script>
+  <script src="lib/router.dev.js"></script>
+  <script src="lib/http.dev.js"></script>
   
   <script>
       System.config({
         packages: {
-          'dist/app': {
+          'app': {
             format: 'register',
             defaultExtension: 'js'
           },
@@ -26,11 +29,11 @@
           }
         },
         map: {
-          immutable: 'dist/lib/immutable.js',
-          'node-uuid': 'dist/lib/uuid.js'
+          immutable: 'lib/immutable.js',
+          'node-uuid': 'lib/uuid.js'
         }
       });
-      System.import('dist/app/scripts/boot')
+      System.import('app/scripts/boot')
             .then(null, console.error.bind(console));
   </script> 
 </head>

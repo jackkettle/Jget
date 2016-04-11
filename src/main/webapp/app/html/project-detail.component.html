@@ -1,0 +1,37 @@
+<div>
+    <div *ngIf="project">
+        <div id="content-header">
+            <h4>Project Details</h4>
+        </div>
+        <div class="content-card col-md-12">
+            <div class="col-md-12">
+                <div class="col-md-3">
+                    <label>name: </label>
+                </div>
+                <div class="col-md-7"><span>{{project.name}}</span></div>
+            </div>
+            <div class="col-md-12">
+                <div class="col-md-3">
+                    <label>id: </label>
+                </div>
+                <div class="col-md-7"><span>{{project.id}}</span></div>
+            </div>
+            <div class="col-md-12">
+                <div class="col-md-3">
+                    <label>rootUrls: </label>
+                </div>
+                <div class="col-md-7">
+                    <ul>
+                        <li *ngFor="#rootUrl of project.rootUrls">
+                            <span>{{rootUrl}}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="card-action-block col-md-12">
+              <button (click)="goBack()">Back</button>
+            </div>
+        </div>
+    </div>
+</div>

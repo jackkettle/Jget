@@ -17,16 +17,7 @@
     "node_modules/immutable/dist/immutable.d.ts"
   ],
   "files": [
-    "app/scripts/app.component.ts",
-    "app/scripts/boot.ts",
-    "app/scripts/dashboard.component.ts",
-    "app/scripts/hero-detail.component.ts",
-    "app/scripts/hero.service.ts",
-    "app/scripts/hero.ts",
-    "app/scripts/heroes.component.ts",
-    "app/scripts/mock-projects.ts",
-    "app/scripts/download-project.service.ts",
-    "app/scripts/project.ts",
+    "app/scripts/**/*.ts",
     "typings/node-uuid/node-uuid-base.d.ts",
     "typings/node-uuid/node-uuid-cjs.d.ts",
     "typings/node-uuid/node-uuid-global.d.ts",

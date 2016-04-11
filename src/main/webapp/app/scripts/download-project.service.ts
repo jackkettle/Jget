@@ -18,7 +18,7 @@ export class DownloadProjectService {
   }
 
   getProject(id: string) {
-    return Promise.resolve(PROJECTS)
-      .then(projects => projects.filter(h => h.id === id)[0]);
+    return this.http.get('http://localhost:8090/api/download/getProject/' + id)
+      .map(response => response.json());
   }
 }
