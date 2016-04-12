@@ -1,10 +1,15 @@
-
-<h3 class="row">All Projects</h3>
-<div class="grid grid-pad">
-	<div *ngFor="#project of downloadProjects" class="col-1-4" (click)="gotoDetail(project)">
-		<div class="module hero">
-			<h4>{{project.name}}</h4>
-      <aside>{{project.id}}</aside>
-		</div>
-	</div>
+<div id="content-header">
+    <h4>All Projects</h4>
+</div>
+<div *ngFor="#project of downloadProjects" class="content-card col m4 hoverable">
+    <div class="row">
+        <div class="col s12">
+            <h5>{{project.name}}</h5>
+            <aside>ID: {{project.id}}</aside>
+        </div>
+        <div class="card-action-block">
+            <button class="waves-effect waves-light btn btn-common" (click)="gotoDetail(project)">View</button>
+            <button class="waves-effect waves-light btn btn-common" (click)="gotoEdit(project)">Edit</button>
+        </div>
+    </div>
 </div>

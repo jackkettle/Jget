@@ -5,12 +5,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @Configuration
-public class SpringConfiguration {
+public class SpringConfiguration extends WebMvcConfigurerAdapter {
 
     @Value("${batch.max.pool.size:5}")
     private int batchMaxPoolSize;;
+    
+    @Value("")
+    private static String contentStorePath;
     
     @Bean
     public TaskExecutor taskExecutor() {
@@ -20,4 +25,10 @@ public class SpringConfiguration {
         return taskExecutor;
     }
     
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry){
+         registry.addResourceHandler("/**")
+            .addResourceLocations("/dist/")
+            .setCachePeriod(0);
+    }
 }

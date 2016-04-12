@@ -76,14 +76,11 @@ public class JgetApplication {
         if (!isValid) {
             logger.info("The manifest is invalid");
             return;
+            
         }
 
         ManifestProvider.setCurrentManifest(manifest);
-        ManifestProvider.getManifests().add(manifest);
         
-        return; 
-        
-        /*
         logger.info("Testing {} rootUrls", ManifestProvider.getCurrentManifest().getRootUrls().size());
         for (String string : ManifestProvider.getCurrentManifest().getRootUrls()) {
             try {
@@ -99,7 +96,12 @@ public class JgetApplication {
                 return;
             }
         }
+        
+        ManifestProvider.getManifests().add(manifest);
+        return; 
 
+        /*
+         
         logger.info("Creating folders for {} seeds", ManifestProvider.getCurrentManifest().getSeeds().size());
         for (URI uri : ManifestProvider.getCurrentManifest().getSeeds()) {
 

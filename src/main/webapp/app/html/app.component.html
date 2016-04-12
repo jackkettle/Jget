@@ -1,15 +1,17 @@
-<header id="main-header" class="z-depth-1">
-  <div class="col-md-12">
-    <h1>{{title}}</h1>
-    <h5>{{description}}</h5>
-  </div>
-  <nav id="main-nav">
-    <a [routerLink]="['Dashboard']">Dashboard</a>
-    <a [routerLink]="['Create']">Create</a>
-  </nav>
+<header id="main-header" class="z-depth-1 row">
+    <div class="col s12">
+        <h1>{{title}}</h1>
+        <h5>{{description}}</h5>
+    </div>
+    <nav id="main-nav">
+        <a [routerLink]="['Dashboard']">Dashboard</a>
+        <a [routerLink]="['Create']">Create</a>
+    </nav>
 </header>
 <div id="background">
-  <div class="container">
-    <router-outlet></router-outlet>
-  </div>
+    <div class="container">
+        <div id="content-container" class="row">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
 </div>

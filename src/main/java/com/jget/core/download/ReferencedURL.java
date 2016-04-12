@@ -4,13 +4,13 @@ import java.net.URL;
 
 public class ReferencedURL {
 
-    public ReferencedURL() {
-        this.location = "";
-    }
-    
     private String location;
     
     private URL url;
+    
+    public ReferencedURL() {
+        this.location = "";
+    }
 
     public String getLocation() {
         return location;

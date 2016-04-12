@@ -15,13 +15,13 @@ gulp.task('clean', function () {
 });
 
 // copy static assets - i.e. non TypeScript compiled source
-gulp.task('copy:assets', function() {
+gulp.task('copy:assets', ['clean'], function() {
   return gulp.src(['app/**/*', 'index.html', 'styles.css', '!app/**/*.ts', '!app/**/*.scss'], { base : './' })
     .pipe(gulp.dest('dist'))
 });
 
 // copy dependencies
-gulp.task('copy:libs', function() {
+gulp.task('copy:libs', ['clean'], function() {
   return gulp.src([
       'node_modules/angular2/bundles/http.dev.js',
       'node_modules/angular2/bundles/angular2-polyfills.js',
@@ -36,6 +36,13 @@ gulp.task('copy:libs', function() {
     .pipe(gulp.dest('dist/lib'))
 });
 
+gulp.task('copy:fonts', ['clean'], function() {
+  return gulp.src([
+      'node_modules/materialize-sass/font/**/*'
+    ])
+    .pipe(gulp.dest('dist/app/font'))
+});
+
 // linting
 gulp.task('tslint', function() {
   return gulp.src('app/**/*.ts')
@@ -44,14 +51,14 @@ gulp.task('tslint', function() {
 });
 
 // sass
-gulp.task('sass', function () {
+gulp.task('sass', ['clean'], function () {
   return gulp.src('app/styles/**/*.scss')
     .pipe(sass().on('error', sass.logError))
     .pipe(gulp.dest('dist/app/styles'));
 });
 
 // TypeScript compile
-gulp.task('compile', function () {
+gulp.task('compile', ['clean'], function () {
   return gulp
     .src(tscConfig.files)
     .pipe(sourcemaps.init())
@@ -76,13 +83,13 @@ gulp.task('serve', ['build'], function() {
     }
   });
 
-  gulp.watch(['app/**/*', 'index.html', 'styles.css'], ['buildAndReload']);
+  gulp.watch(['app/**/*', 'index.html'], ['buildAndReload']);
 });
 
 gulp.task('watch', ['build'], function() {
-  gulp.watch(['app/**/*', 'index.html', 'styles.css'], ['buildAndReload']);
+  gulp.watch(['app/**/*', 'index.html'], ['buildAndReload']);
 });
 
-gulp.task('build', ['clean', 'tslint', 'compile', 'sass', 'copy:libs', 'copy:assets']);
+gulp.task('build', ['clean','sass', 'copy:libs', 'copy:fonts', 'copy:assets', 'tslint', 'compile']);
 gulp.task('buildAndReload', ['build'], reload);
 gulp.task('default', ['watch']);
