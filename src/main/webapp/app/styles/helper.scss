@@ -1,3 +1,29 @@
 .margin-top-10 {
   margin-top: 1rem;
 }
+
+.margin-top-20 {
+  margin-top: 2rem;
+}
+
+
+.margin-top-30 {
+  margin-top: 3rem;
+}
+
+
+.margin-side-10{
+  margin-left: .5rem !important;
+  margin-right: .5rem !important;
+}
+
+
+.primary-text{
+  @extend .light-green-text,
+  .text-darken-4;
+}
+
+.highlight-text{
+    @extend .light-green-text,
+    .lighten-2;
+}

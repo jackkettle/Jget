@@ -1,6 +1,7 @@
 package com.jget.core.manifest;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -18,8 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.jget.core.download.ReferencedURL;
 
+@JsonDeserialize(using = ManifestDeserializer.class)
 public class Manifest {
 
     private UUID id;
@@ -69,6 +72,20 @@ public class Manifest {
             logger.info("No seeds have been added");
             return false;
         }
+        
+        for (String string : rootUrls) {
+            try {
+                URL url = new URL(string);
+                ReferencedURL referencedURL = new ReferencedURL();
+                referencedURL.setLocation("");
+                referencedURL.setURL(url);
+                frontier.add(referencedURL);
+
+            } catch (MalformedURLException e) {
+                logger.info("Invalid rootURL: {}", rootUrls);
+                return false;
+            }
+        }
 
         return true;
     }
@@ -76,6 +93,19 @@ public class Manifest {
     public Manifest() {
         super();
         setId(UUID.randomUUID());
+        this.name = "";
+        this.rootUrls = new ArrayList<String>();
+        this.seeds = new ArrayList<URI>();
+        this.frontier = new ConcurrentLinkedQueue<ReferencedURL>();
+        this.linkMap = new HashMap<URL, Path>();
+        this.fileMap = new HashMap<Path, URL>();
+        this.setFileCount(new AtomicInteger(0));
+        this.uniqueIDs = new HashSet<>();
+    }
+    
+    public Manifest(UUID uuid) {
+        super();
+        setId(uuid);
         this.name = "";
         this.rootUrls = new ArrayList<String>();
         this.seeds = new ArrayList<URI>();
@@ -177,4 +207,5 @@ public class Manifest {
         }
         
     }
+    
 }

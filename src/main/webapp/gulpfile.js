@@ -43,13 +43,6 @@ gulp.task('copy:fonts', ['clean'], function() {
     .pipe(gulp.dest('dist/app/font'))
 });
 
-// linting
-gulp.task('tslint', function() {
-  return gulp.src('app/**/*.ts')
-    .pipe(tslint())
-    .pipe(tslint.report('verbose'));
-});
-
 // sass
 gulp.task('sass', ['clean'], function () {
   return gulp.src('app/styles/**/*.scss')
@@ -90,6 +83,6 @@ gulp.task('watch', ['build'], function() {
   gulp.watch(['app/**/*', 'index.html'], ['buildAndReload']);
 });
 
-gulp.task('build', ['clean','sass', 'copy:libs', 'copy:fonts', 'copy:assets', 'tslint', 'compile']);
+gulp.task('build', ['clean','sass', 'copy:libs', 'copy:fonts', 'copy:assets', 'compile']);
 gulp.task('buildAndReload', ['build'], reload);
 gulp.task('default', ['watch']);

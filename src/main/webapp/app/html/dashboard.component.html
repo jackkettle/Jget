@@ -1,15 +1,25 @@
 <div id="content-header">
     <h4>All Projects</h4>
 </div>
-<div *ngFor="#project of downloadProjects" class="content-card col m4 hoverable">
+<div *ngFor="#project of downloadProjects" class="content-card col m4 hoverable dashboard-project-card">
     <div class="row">
-        <div class="col s12">
+        <div class="col s12 medium-height">
             <h5>{{project.name}}</h5>
             <aside>ID: {{project.id}}</aside>
         </div>
         <div class="card-action-block">
             <button class="waves-effect waves-light btn btn-common" (click)="gotoDetail(project)">View</button>
             <button class="waves-effect waves-light btn btn-common" (click)="gotoEdit(project)">Edit</button>
+        </div>
+    </div>
+</div>
+<div *ngIf="!downloadProjects.length" class="content-card col m12 hoverable dashboard-project-card">
+    <div class="row margin-top-30">
+        <div class="col m12 center-align">
+            <i class="subdued-text large material-icons">info_outline</i>
+        </div>
+        <div class="col m12 center-align">
+            <h5 class="subdued-text">No projects</h5>
         </div>
     </div>
 </div>

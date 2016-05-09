@@ -21,9 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.jget.core.manifest.Manifest;
 import com.jget.core.manifest.ManifestProvider;
-import com.jget.core.utils.file.FileSystemUtils;
 import com.jget.core.utils.html.HtmlAnalyser;
 import com.jget.core.utils.html.HtmlUtils;
 import com.jget.core.utils.url.UrlUtils;

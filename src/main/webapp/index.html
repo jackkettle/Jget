@@ -2,46 +2,72 @@
 <html>
 
 <head>
-  <base href="/">
+    <base href="/">
+    <link rel="stylesheet" href="app/styles/main.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="lib/angular2-polyfills.js"></script>
+    <script src="lib/system.src.js"></script>
+    <script src="lib/Rx.js"></script>
+    <script src="lib/angular2.dev.js"></script>
+    <script src="lib/router.dev.js"></script>
+    <script src="lib/http.dev.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+    
+    <script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
-
-  <link rel="stylesheet" href="app/styles/main.css">
-
-  <script src="lib/angular2-polyfills.js"></script>
-  <script src="lib/system.src.js"></script>
-  <script src="lib/Rx.js"></script>
-  <script src="lib/angular2.dev.js"></script>
-  <script src="lib/router.dev.js"></script>
-  <script src="lib/http.dev.js"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
-  
-  <script>
-      System.config({
-        packages: {
-          'app': {
-            format: 'register',
-            defaultExtension: 'js'
-          },
-          'node-uuid': {
+        System.config({
+            packages: {
+                'app': {
+                    format: 'register',
+                    defaultExtension: 'js'
+                },
+                'node-uuid': {
+                    map: {
+                        crypto: '@empty'
+                    }
+                }
+            },
             map: {
-              crypto: '@empty'
+                immutable: 'lib/immutable.js',
+                'node-uuid': 'lib/uuid.js'
             }
-          }
-        },
-        map: {
-          immutable: 'lib/immutable.js',
-          'node-uuid': 'lib/uuid.js'
-        }
-      });
-      System.import('app/scripts/boot')
+        });
+        System.import('app/scripts/boot')
             .then(null, console.error.bind(console));
-  </script> 
+
+          $('.modal-trigger').leanModal({
+              dismissible: true, // Modal can be dismissed by clicking outside of the modal
+              opacity: .5, // Opacity of modal background
+              in_duration: 2000, // Transition in duration
+              out_duration: 2000, // Transition out duration
+              ready: function() { alert('Ready'); }, // Callback for Modal open
+              complete: function() { alert('Closed'); } // Callback for Modal close
+            }
+          );
+
+    </script>
+    
 </head>
 
 <body>
-  <my-app>Loading...</my-app>
+    <my-app>
+        <div class="loader-container">
+            <div class="preloader-wrapper big active">
+                <div class="spinner-layer spinner-green-only">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="gap-patch">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="circle-clipper right">
+                        <div class="circle"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </my-app>
 </body>
 
 </html>
