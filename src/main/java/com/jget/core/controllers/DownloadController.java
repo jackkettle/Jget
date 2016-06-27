@@ -1,5 +1,7 @@
 package com.jget.core.controllers;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +18,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jget.core.configuration.ConfigurationConstants;
+import com.jget.core.configuration.ConfigurationConstant;
+import com.jget.core.configuration.ConfigurationManager;
 import com.jget.core.manifest.Manifest;
 import com.jget.core.manifest.ManifestProvider;
 import com.jget.core.utils.manifest.ManifestUtils;
@@ -25,6 +28,8 @@ import com.jget.core.utils.manifest.ManifestUtils;
 @RequestMapping(value = "/api/project")
 public class DownloadController {
 
+    
+    
     public void startDownload() {
         logger.info("Service called: startDownload()");
 
@@ -86,7 +91,8 @@ public class DownloadController {
         }
 
         if (inputManifest.getRootDir() == null || StringUtils.isEmpty(inputManifest.getRootDir().toString())) {
-            inputManifest.setRootDir(ConfigurationConstants.ROOT_DIR);
+            Path rootPath = Paths.get(ConfigurationManager.getValue(ConfigurationConstant.FILESTORE).get().toString());
+            inputManifest.setRootDir(rootPath);
         }
 
         if (!inputManifest.validate()) {
