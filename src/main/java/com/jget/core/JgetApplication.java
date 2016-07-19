@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -16,6 +17,9 @@ import com.jget.core.spring.ApplicationContextProvider;
 
 @SpringBootApplication
 public class JgetApplication {
+	
+	@Autowired
+	ConfigurationManager configurationManager;
 
     public static final ImmutableSet<String> URL_SEEDS = ImmutableSet.of("www.teagasc.ie/publications/");
 
@@ -34,8 +38,8 @@ public class JgetApplication {
     }
 
     private void mainMethod() {
-                
-        logger.info("{}", ConfigurationManager.getValue (ConfigurationConstant.FILESTORE));
+    	logger.info ("Marker1: {}", configurationManager.getEntries ());
+        logger.info("{}", configurationManager.getValue (ConfigurationConstant.FILESTORE));
     }
 
     private static final Logger logger = LoggerFactory.getLogger(JgetApplication.class);

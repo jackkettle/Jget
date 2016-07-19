@@ -12,7 +12,10 @@ import java.util.concurrent.Future;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Component;
 
 import com.jget.core.manifest.ManifestProvider;
 import com.jget.core.report.ReportConstants;
@@ -23,16 +26,19 @@ import com.jget.core.utils.url.UrlAnalyser;
 import com.jget.core.utils.url.UrlAnalysisResult;
 import com.jget.core.utils.url.UrlUtils;
 
+@Component
+@Scope("singleton")
 public class DownloadManager {
 
-    public static ThreadPoolTaskExecutor taskExecutor;
+	@Autowired
+	ThreadPoolTaskExecutor taskExecutor;
+	
     public static List<Future<?>> runningTasks;
     public static int processedLinks;
 
     public DownloadManager() {
         runningTasks = new ArrayList<Future<?>>();
-        taskExecutor = (ThreadPoolTaskExecutor) ApplicationContextProvider.getBean(ThreadPoolTaskExecutor.class);
-        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        logger.info ("Marker 117: {}", ApplicationContextProvider.getApplicationContext ());
     }
 
     public void commenceDownload() {
