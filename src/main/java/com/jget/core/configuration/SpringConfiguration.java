@@ -29,6 +29,13 @@ public class SpringConfiguration
 	public Environment environment;
 
 	@Bean
+	public ConfigurationManager configurationManager () {
+		ConfigurationManager configurationManager = new ConfigurationManager ();
+		configurationManager.init (environment);
+		return configurationManager;
+	}
+	
+	@Bean
 	public ThreadPoolTaskExecutor taskExecutor () {
 		ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor ();
 		taskExecutor.setMaxPoolSize (batchMaxPoolSize);
@@ -37,18 +44,12 @@ public class SpringConfiguration
 		return taskExecutor;
 	}
 
-	@Bean
-	public ConfigurationManager configurationManager () {
-		ConfigurationManager configurationManager = new ConfigurationManager ();
-		configurationManager.init (environment);
-		return configurationManager;
-	}
-
 	@Override
 	public void addResourceHandlers (ResourceHandlerRegistry registry) {
 		registry.addResourceHandler ("/**").addResourceLocations ("/dist/").setCachePeriod (0);
 	}
 
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger (SpringConfiguration.class);
 
 }

@@ -12,7 +12,6 @@ import org.springframework.context.ApplicationContext;
 import com.google.common.collect.ImmutableSet;
 import com.jget.core.configuration.ConfigurationConstant;
 import com.jget.core.configuration.ConfigurationManager;
-import com.jget.core.configuration.SpringConfiguration;
 import com.jget.core.spring.ApplicationContextProvider;
 
 @SpringBootApplication
