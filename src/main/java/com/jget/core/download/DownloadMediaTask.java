@@ -87,11 +87,11 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
         this.referencedURL = referencedURL;
     }
 
-    public DownloadStatus getDownloadStatus() {
+    public DownloadFileStatus getDownloadStatus() {
         return downloadStatus;
     }
 
-    public void setDownloadStatus(DownloadStatus downloadStatus) {
+    public void setDownloadStatus(DownloadFileStatus downloadStatus) {
         this.downloadStatus = downloadStatus;
     }
 
@@ -104,7 +104,7 @@ public class DownloadMediaTask implements Runnable, DownloadTask {
     }
 
     private ReferencedURL referencedURL;
-    private DownloadStatus downloadStatus;
+    private DownloadFileStatus downloadStatus;
 
     private static final Logger logger = LoggerFactory.getLogger(DownloadMediaTask.class);
 

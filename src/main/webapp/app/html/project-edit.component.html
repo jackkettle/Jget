@@ -1,16 +1,15 @@
 <div>
     <div id="content-header">
-        <h4>Create Your Project</h4>
+        <h4>Edit Your Project</h4>
     </div>
     <div class="content-card col s12">
         <div class="row">
-            <form class="col s12 margin-top-10" (ngSubmit)="onSubmit($event)" [ngFormModel]="group" id="createForm">
+            <form class="col s12 margin-top-10" (ngSubmit)="onSubmit($event)" [ngFormModel]="group" id="editForm">
                 <h5>Project Name</h5>
                 <aside>The project name must be unique</aside>
                 <div class="row">
                     <div class="input-field col s12">
                         <input ngControl="name" id="name" type="text" class="validate">
-                        <label for="name">Project Name</label>
                     </div>
                 </div>
                 <h5>Root URLs</h5>
@@ -19,7 +18,6 @@
                     <div *ngFor="#rootURL; of:rootURLs; trackBy:myTrackBy; #i=index">
                         <div class="input-field col s11">
                             <input ngControl="{{i}}" id="password" type="text" class="validate">
-                            <label for="password">Root URL - {{i + 1}}</label>
                         </div>
                         <div *ngIf="i == 0" class="input-field add-icon col s1">
                             <a (click)="addRootURLInput()" class="btn-floating waves-effect waves-light btn-common">
@@ -39,7 +37,6 @@
                     <div *ngFor="#seedURL; of:seedURLs; trackBy:myTrackBy; #i=index">
                         <div class="input-field col s11">
                             <input ngControl="{{i}}" id="password" type="text" class="validate">
-                            <label for="password">Seed URL - {{i + 1}}</label>
                         </div>
                         <div *ngIf="i == 0" class="input-field add-icon col s1">
                             <a (click)="addSeedURLInput()" class="btn-floating waves-effect waves-light btn-common">
@@ -59,7 +56,7 @@
                     <button class="waves-effect waves-light btn btn-common" (click)="goBack()">Back</button>
                 </div>
                 <div class="right">
-                    <button form="createForm" type="submit" class="btn btn-default btn-primary">Submit</button>
+                    <button form="editForm" type="submit" class="btn btn-default btn-primary">Submit</button>
                 </div>
             </div>
         </div>

@@ -3,8 +3,18 @@
 </div>
 <div *ngFor="#project of downloadProjects" class="content-card col m4 hoverable dashboard-project-card">
     <div class="row">
-        <div class="col s12 medium-height">
-            <h5>{{project.name}}</h5>
+        <div class="col s12 small-height">
+            <h5 class="project-title">{{project.name}}</h5>
+        </div>
+        <div class="card-content-block medium-height" *ngIf="currentProject">
+            <div class="col m12 background-primary active-block">
+                <p *ngIf="project.id == currentProject.id">
+                    <span class="col m2"><i class="material-icons col m3">stars</i></span>
+                    <span class="col m10">Active Project</span>
+                </p>
+            </div>
+        </div>
+        <div class="col s12 small-height">
             <aside>ID: {{project.id}}</aside>
         </div>
         <div class="card-action-block">
@@ -13,7 +23,7 @@
         </div>
     </div>
 </div>
-<div *ngIf="!downloadProjects.length" class="content-card col m12 hoverable dashboard-project-card">
+<div *ngIf="downloadProjects == 0" class="content-card col m12 hoverable dashboard-project-card">
     <div class="row margin-top-30">
         <div class="col m12 center-align">
             <i class="subdued-text large material-icons">info_outline</i>

@@ -1,6 +1,6 @@
 package com.jget.core.download;
 
-public class DownloadStatus {
+public class DownloadFileStatus {
 
     private int size;
     private int downloaded;
@@ -15,7 +15,7 @@ public class DownloadStatus {
 
     public static final String STATUSES[] = { "Downloading", "Paused", "Complete", "Cancelled", "Error", "Testing" };
 
-    public DownloadStatus(int size) {
+    public DownloadFileStatus(int size) {
         super();
         this.size = size;
         this.downloaded = 0;

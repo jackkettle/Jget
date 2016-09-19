@@ -36,12 +36,16 @@ public class Manifest {
 
     private List<String> rootUrls;
     
+    @JsonIgnore
     private ConcurrentLinkedQueue<ReferencedURL> frontier;
     
+    @JsonIgnore
     private HashMap<URL, Path> linkMap;
     
+    @JsonIgnore
     private HashMap<Path, URL> fileMap;
     
+    @JsonIgnore
     private HashSet<String> uniqueIDs;
     
     private AtomicInteger fileCount;

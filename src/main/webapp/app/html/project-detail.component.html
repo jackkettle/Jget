@@ -14,7 +14,7 @@
                     <td>{{project.id}}</td>
                 </tr>
                 <tr>
-                    <td>Root URLs</td>
+                    <td>Root URL(s)</td>
                     <td>
                         <ul>
                             <li *ngFor="#rootUrl of project.rootUrls">
@@ -23,15 +23,24 @@
                         </ul>
                     </td>
                 </tr>
+                <tr>
+                    <td>Seed URL(s)</td>
+                    <td>
+                        <ul>
+                            <li *ngFor="#seedUrl of project.seeds">
+                                <span>{{seedUrl}}</span>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
             </tbody>
         </table>
         <div class="card-action-block">
             <div class="left">
-                <button class="waves-effect waves-light btn btn-common" (click)="goBack()">Back</button>
             </div>
             <div class="right">
                 <button class="modal-trigger waves-effect waves-light btn btn-danger" (click)="openModal()">Delete Project</button>
-                <button class="waves-effect waves-light btn btn-primary" (click)="commenceDownload()">Begin Download</button>
+                <button class="waves-effect waves-light btn btn-primary" (click)="setAsActive(project.id)">Set as active</button>
             </div>
         </div>
     </div>

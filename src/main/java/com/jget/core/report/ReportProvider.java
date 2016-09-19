@@ -11,14 +11,18 @@ public class ReportProvider {
 
     private static Report report;
 
-    public static Report getReport() {
-        return report;
+    public ReportProvider() {
+    	report = new Report();
     }
-
+    
     public static void setReport(Report report) {
         ReportProvider.report = report;
     }
 
+    public static Report getReport() {
+        return report;
+    }
+    
     public static void printReportSummaryString() {
 
         Manifest manifest = ManifestProvider.getCurrentManifest();

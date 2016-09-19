@@ -28,16 +28,10 @@ export class ProjectCreateComponent implements OnInit {
 
   constructor(private _formBuilder: FormBuilder, private _router: Router, private _projectService: ProjectService) { 
     this.name = new Control('');
-    this.rootURLs = [
-      new Control('')
-    ];
+    this.rootURLs = [new Control('')];
     this.rootURLArray = new ControlArray(this.rootURLs);
-
-    this.seedURLs = [
-      new Control('')
-    ];
+    this.seedURLs = [new Control('')];
     this.seedURLArray = new ControlArray(this.seedURLs);
-
     this.group = _formBuilder.group({
       name: this.name,
       rootURLInputs: this.rootURLArray,
@@ -51,6 +45,10 @@ export class ProjectCreateComponent implements OnInit {
       error => console.error('Error: ' + error),
       () => console.log('Completed!')
     );
+  }
+
+  goBack(){
+    this._router.navigate(['Dashboard', {}]);
   }
 
   addRootURLInput() {

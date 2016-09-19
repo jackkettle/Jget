@@ -21,9 +21,9 @@ export class ProjectDetailComponent implements OnInit {
     this._projectService.get(id)
       .subscribe(
         response => this.project = response,
-        error => { 
-          console.error('Error: 123' + error); 
-          this._router.navigate(['Dashboard', {}]) 
+        error => {
+          console.error('Error: 123' + error);
+          this._router.navigate(['Dashboard', {}])
         },
         () => console.log(this.project)
       );
@@ -38,16 +38,21 @@ export class ProjectDetailComponent implements OnInit {
     console.log("Deleteing project: " + id);
     this._projectService.delete(id)
       .subscribe(
-        error => console.error('Error: ' + error),
-        () => this._router.navigate(['Dashboard', {}])
+      response => console.log(response),
+      () => this._router.navigate(['Dashboard', {}])
       );
   }
 
-  commenceDownload(project) {
-    console.log(project);
+  setAsActive(id) {
+    console.log("Setting project as active: " + id);
+    this._projectService.setActiveManifest(id)
+      .subscribe(
+      error => console.error('Error: ' + error),
+      () => this._router.navigate(['Dashboard', {}])
+      );
   }
 
-  openModal(){
+  openModal() {
     $('#modal1').openModal();
   }
 

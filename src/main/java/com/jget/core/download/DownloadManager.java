@@ -21,7 +21,6 @@ import com.jget.core.manifest.ManifestProvider;
 import com.jget.core.report.ReportConstants;
 import com.jget.core.report.ReportProvider;
 import com.jget.core.report.ReportUtils;
-import com.jget.core.spring.ApplicationContextProvider;
 import com.jget.core.utils.url.UrlAnalyser;
 import com.jget.core.utils.url.UrlAnalysisResult;
 import com.jget.core.utils.url.UrlUtils;
@@ -32,173 +31,213 @@ public class DownloadManager {
 
 	@Autowired
 	ThreadPoolTaskExecutor taskExecutor;
-	
-    public static List<Future<?>> runningTasks;
-    public static int processedLinks;
 
-    public DownloadManager() {
-        runningTasks = new ArrayList<Future<?>>();
-        logger.info ("Marker 117: {}", ApplicationContextProvider.getApplicationContext ());
-    }
+	private List<Future<?>> runningTasks;
+	private int processedLinks;
+	private boolean currentlyRunning;
+	private long startTimeNono;
 
-    public void commenceDownload() {
+	private DownloadManagerStatus downloadManagerStatus;
 
-        processedLinks = 0;
+	public DownloadManager () {
+		runningTasks = new ArrayList<Future<?>> ();
+		downloadManagerStatus = new DownloadManagerStatus ();
+	}
 
-        logger.info(DownloadConfig.LINE_BREAK);
-        logger.info("Beginning download");
-        logger.info(DownloadConfig.LINE_BREAK);
+	public void commenceDownload () {
 
-        while (!ManifestProvider.getCurrentManifest().getFrontier().isEmpty()) {
+		startTimeNono = System.nanoTime ();
+		currentlyRunning = true;
+		processedLinks = 0;
 
-            if (ManifestProvider.getCurrentManifest().getFileCount().get() >= DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES) {
-                logger.info("The maximum number of files have been downloaded: {}", DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES);
-                waitForTasksToComplete();
-                break;
-            }
+		logger.info (DownloadConfig.LINE_BREAK);
+		logger.info ("Beginning download");
+		logger.info (DownloadConfig.LINE_BREAK);
 
-            if (processedLinks > DownloadConfig.MAX_TOTAL_PROCESSED_LINKS) {
-                logger.info("The maximum number of links have been processed: {}", DownloadConfig.MAX_TOTAL_PROCESSED_LINKS);
-                waitForTasksToComplete();
-                break;
-            }
+		while (!ManifestProvider.getCurrentManifest ().getFrontier ().isEmpty ()) {
 
-            processedLinks++;
+			if (!currentlyRunning) {
+				logger.info ("Stopping download!");
+				waitForTasksToComplete();
+				break;
+			}
 
-            logger.info("Total threads running: {}", taskExecutor.getActiveCount());
-            logger.info("Total size of frontier: {}", ManifestProvider.getCurrentManifest().getFrontier().size());
-            logger.info("Total size of linkMap: {}", ManifestProvider.getCurrentManifest().getLinkMap().size());
-            logger.info("Total links processed: {}", processedLinks);
+			if (ManifestProvider.getCurrentManifest ().getFileCount ().get () >= DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES) {
+				logger.info ("The maximum number of files have been downloaded: {}", DownloadConfig.MAX_TOTAL_DOWNLOADED_FILES);
+				waitForTasksToComplete ();
+				break;
+			}
 
-            ReferencedURL referencedURL = ManifestProvider.getCurrentManifest().getFrontier().poll();
+			if (processedLinks > DownloadConfig.MAX_TOTAL_PROCESSED_LINKS) {
+				logger.info ("The maximum number of links have been processed: {}", DownloadConfig.MAX_TOTAL_PROCESSED_LINKS);
+				waitForTasksToComplete ();
+				break;
+			}
 
-            if (UrlUtils.hasLinkBeenProcessed(referencedURL.getURL())) {
-                logger.info("Link has previously been processed: {}", referencedURL.getURL());
-                continue;
-            }
+			processedLinks++;
 
-            UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse(referencedURL.getURL());
+			long elapsedTime = System.nanoTime () - startTimeNono;
+			Double elapsedTimeSeconds = (double)elapsedTime / 1000000000.0;
 
-            if (!urlAnalyserResult.isValidLink()) {
-                logger.info("Invalid link: {}\n", referencedURL.getURL());
-                int reportType = ReportUtils.getReportTypeFromResponseCode(urlAnalyserResult.getResponseCode());
-                ReportProvider.getReport().addEntry(reportType, referencedURL.getLocation(), referencedURL.getURL().toString());
-                continue;
-            }
+			downloadManagerStatus.setActiveThreads (taskExecutor.getActiveCount ());
+			downloadManagerStatus.setFrontierSize (ManifestProvider.getCurrentManifest ().getFrontier ().size ());;
+			downloadManagerStatus.setLinkMapSize (ManifestProvider.getCurrentManifest ().getLinkMap ().size ());
+			downloadManagerStatus.setProcessLinks (processedLinks);
+			downloadManagerStatus.setElapsedTimeSeconds (elapsedTimeSeconds.intValue ());
 
-            if (UrlUtils.exceedsUrlDepth(urlAnalyserResult.getURL())) {
-                logger.info("The following URL is too deep: {}", referencedURL.getURL());
-                ReportProvider.getReport().addEntry(ReportConstants.TOO_MANY_REDIRECTS, referencedURL.getLocation(),
-                        referencedURL.getURL().toString());
-                continue;
-            }
+			logger.info ("Total threads running: {}", taskExecutor.getActiveCount ());
+			logger.info ("Total size of frontier: {}", ManifestProvider.getCurrentManifest ().getFrontier ().size ());
+			logger.info ("Total size of linkMap: {}", ManifestProvider.getCurrentManifest ().getLinkMap ().size ());
+			logger.info ("Total links processed: {}", processedLinks);
 
-            int redirectIndex = 0;
-            boolean brokenRedirect = false;
-            boolean exceedRedirectMax = false;
-            boolean processedLink = false;
-            URL originalUrl = referencedURL.getURL();
-            while (urlAnalyserResult.isRedirect()) {
+			ReferencedURL referencedURL = ManifestProvider.getCurrentManifest ().getFrontier ().poll ();
 
-                redirectIndex++;
-                if (redirectIndex > DownloadConfig.MAX_REDIRECT_DEPTH) {
-                    logger.info("Exceeded redirect depth");
-                    exceedRedirectMax = true;
-                    break;
-                }
+			if (UrlUtils.hasLinkBeenProcessed (referencedURL.getURL ())) {
+				logger.info ("Link has previously been processed: {}", referencedURL.getURL ());
+				continue;
+			}
 
-                Optional<UrlAnalysisResult> newUrlAnalyserResult = handleRedirect(urlAnalyserResult, referencedURL.getURL());
+			UrlAnalysisResult urlAnalyserResult = UrlAnalyser.analyse (referencedURL.getURL ());
 
-                if (!newUrlAnalyserResult.isPresent()) {
-                    brokenRedirect = true;
-                    break;
-                }
+			if (!urlAnalyserResult.isValidLink ()) {
+				logger.info ("Invalid link: {}\n", referencedURL.getURL ());
+				int reportType = ReportUtils.getReportTypeFromResponseCode (urlAnalyserResult.getResponseCode ());
+				ReportProvider.getReport ().addEntry (reportType, referencedURL.getLocation (), referencedURL.getURL ().toString ());
+				continue;
+			}
 
-                urlAnalyserResult = newUrlAnalyserResult.get();
-                if (UrlUtils.hasLinkBeenProcessed(urlAnalyserResult.getURL())) {
-                    processedLink = true;
-                    break;
-                }
-                referencedURL.setURL(urlAnalyserResult.getURL());
-            }
-            if (exceedRedirectMax) {
-                logger.info("Too many redirects from original Url: {}", originalUrl.toString());
-                continue;
-            }
-            if (brokenRedirect) {
-                logger.info("Broken redirect from original Url: {}", originalUrl.toString());
-                continue;
-            }
-            if (processedLink) {
-                logger.info("Link has previously been processed: {}", urlAnalyserResult.getURL());
-                continue;
-            }
+			if (UrlUtils.exceedsUrlDepth (urlAnalyserResult.getURL ())) {
+				logger.info ("The following URL is too deep: {}", referencedURL.getURL ());
+				ReportProvider.getReport ().addEntry (ReportConstants.TOO_MANY_REDIRECTS, referencedURL.getLocation (),
+						referencedURL.getURL ().toString ());
+				continue;
+			}
 
-            logger.info("Processing url: {}", referencedURL.getURL().toString());
-            logger.info("Mime type: {}", urlAnalyserResult.getContentType().getMimeType());
+			int redirectIndex = 0;
+			boolean brokenRedirect = false;
+			boolean exceedRedirectMax = false;
+			boolean processedLink = false;
+			URL originalUrl = referencedURL.getURL ();
+			while (urlAnalyserResult.isRedirect ()) {
 
-            ManifestProvider.getCurrentManifest().getFileCount().incrementAndGet();
+				redirectIndex++;
+				if (redirectIndex > DownloadConfig.MAX_REDIRECT_DEPTH) {
+					logger.info ("Exceeded redirect depth");
+					exceedRedirectMax = true;
+					break;
+				}
 
-            if (urlAnalyserResult.getContentType().getMimeType().equals(ContentType.TEXT_HTML.getMimeType())) {
-                DownloadPageTask downloadPageTask = new DownloadPageTask(referencedURL);
-                runningTasks.add(taskExecutor.submit(downloadPageTask));
-            } else {
-                DownloadMediaTask downloadMediaTask = new DownloadMediaTask(referencedURL);
-                runningTasks.add(taskExecutor.submit(downloadMediaTask));
-            }
+				Optional<UrlAnalysisResult> newUrlAnalyserResult = handleRedirect (urlAnalyserResult, referencedURL.getURL ());
 
-            if (ManifestProvider.getCurrentManifest().getFrontier().isEmpty() && (taskExecutor.getActiveCount() > 0)) {
-                logger.info("No urls to process, Waiting for tasks to finish");
-                waitForTasksToComplete();
-            }
-            reviewRunningTasks();
-        }
-    }
+				if (!newUrlAnalyserResult.isPresent ()) {
+					brokenRedirect = true;
+					break;
+				}
 
-    public void reviewRunningTasks() {
+				urlAnalyserResult = newUrlAnalyserResult.get ();
+				if (UrlUtils.hasLinkBeenProcessed (urlAnalyserResult.getURL ())) {
+					processedLink = true;
+					break;
+				}
+				referencedURL.setURL (urlAnalyserResult.getURL ());
+			}
+			if (exceedRedirectMax) {
+				logger.info ("Too many redirects from original Url: {}", originalUrl.toString ());
+				continue;
+			}
+			if (brokenRedirect) {
+				logger.info ("Broken redirect from original Url: {}", originalUrl.toString ());
+				continue;
+			}
+			if (processedLink) {
+				logger.info ("Link has previously been processed: {}", urlAnalyserResult.getURL ());
+				continue;
+			}
 
-        List<Future<?>> finishedTasks = new ArrayList<Future<?>>();
-        for (Future<?> future : runningTasks) {
-            if (future.isDone()) {
-                finishedTasks.add(future);
-            }
-        }
-        runningTasks.removeAll(finishedTasks);
+			logger.info ("Processing url: {}", referencedURL.getURL ().toString ());
+			logger.info ("Mime type: {}", urlAnalyserResult.getContentType ().getMimeType ());
 
-    }
+			ManifestProvider.getCurrentManifest ().getFileCount ().incrementAndGet ();
 
-    public void waitForTasksToComplete() {
+			if (urlAnalyserResult.getContentType ().getMimeType ().equals (ContentType.TEXT_HTML.getMimeType ())) {
+				DownloadPageTask downloadPageTask = new DownloadPageTask (referencedURL);
+				runningTasks.add (taskExecutor.submit (downloadPageTask));
+			}
+			else {
+				DownloadMediaTask downloadMediaTask = new DownloadMediaTask (referencedURL);
+				runningTasks.add (taskExecutor.submit (downloadMediaTask));
+			}
 
-        for (Future<?> future : runningTasks) {
-            try {
-                if (!future.isDone())
-                    future.get();
-            } catch (InterruptedException | NoSuchElementException | ExecutionException e) {
-                logger.error("Failed to get info: {}", future.toString(), e);
-            }
-        }
+			if (ManifestProvider.getCurrentManifest ().getFrontier ().isEmpty () && (taskExecutor.getActiveCount () > 0 )) {
+				logger.info ("No urls to process, Waiting for tasks to finish");
+				waitForTasksToComplete ();
+			}
+			reviewRunningTasks ();
+		}
+		currentlyRunning = false;
+	}
 
-    }
+	public void reviewRunningTasks () {
 
-    public Optional<UrlAnalysisResult> handleRedirect(UrlAnalysisResult urlAnalyserResult, URL url) {
-        logger.info("Handling redirect for link: {}", url.toString());
-        try {
-            url = new URL(urlAnalyserResult.getLocation());
-            urlAnalyserResult = UrlAnalyser.analyse(url);
+		List<Future<?>> finishedTasks = new ArrayList<Future<?>> ();
+		for (Future<?> future : runningTasks) {
+			if (future.isDone ()) {
+				finishedTasks.add (future);
+			}
+		}
+		runningTasks.removeAll (finishedTasks);
 
-            if (!urlAnalyserResult.isValidLink()) {
-                return Optional.empty();
-            }
+	}
 
-            logger.info("New location found: {}", url.toString());
-            return Optional.of(urlAnalyserResult);
+	public void cancelDownload () {
+		this.currentlyRunning = false;
+		for (Future<?> future : runningTasks) {
+			if (!future.isDone ()) {
+				future.cancel (false);
+			}
+		}
+	}
 
-        } catch (MalformedURLException e) {
-            return Optional.empty();
-        }
+	public void waitForTasksToComplete () {
+		for (Future<?> future : runningTasks) {
+			try {
+				if (!future.isDone ())
+					future.get ();
+			}
+			catch (InterruptedException | NoSuchElementException | ExecutionException e) {
+				logger.error ("Failed to get info: {}", future.toString (), e);
+			}
+		}
+	}
 
-    }
+	public Optional<UrlAnalysisResult> handleRedirect (UrlAnalysisResult urlAnalyserResult, URL url) {
+		logger.info ("Handling redirect for link: {}", url.toString ());
+		try {
+			url = new URL (urlAnalyserResult.getLocation ());
+			urlAnalyserResult = UrlAnalyser.analyse (url);
 
-    private static final Logger logger = LoggerFactory.getLogger(DownloadManager.class);
+			if (!urlAnalyserResult.isValidLink ()) {
+				return Optional.empty ();
+			}
+
+			logger.info ("New location found: {}", url.toString ());
+			return Optional.of (urlAnalyserResult);
+
+		}
+		catch (MalformedURLException e) {
+			return Optional.empty ();
+		}
+
+	}
+
+	public boolean isCurrentlyRunning () {
+		return this.currentlyRunning;
+	}
+
+	public DownloadManagerStatus getDownloadStatus () {
+		return this.downloadManagerStatus;
+	}
+
+	private static final Logger logger = LoggerFactory.getLogger (DownloadManager.class);
 
 }

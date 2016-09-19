@@ -2,6 +2,7 @@ package com.jget.core.controllers;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,9 +20,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jget.core.ErrorMessages;
 import com.jget.core.configuration.ConfigurationConstant;
 import com.jget.core.configuration.ConfigurationManager;
 import com.jget.core.download.DownloadManager;
+import com.jget.core.download.DownloadManagerStatus;
 import com.jget.core.manifest.Manifest;
 import com.jget.core.manifest.ManifestProvider;
 import com.jget.core.utils.manifest.ManifestUtils;
@@ -32,9 +35,21 @@ public class DownloadController {
 
 	@Autowired
 	DownloadManager downloadManager;
-	
+
 	@Autowired
 	ConfigurationManager configurationManager;
+
+	@RequestMapping(value = "/downloadManagerStatus", method = RequestMethod.GET)
+	public ResponseEntity<DownloadManagerStatus> getDownloadManagerStatus (HttpServletRequest request) {
+		logger.info ("Service called: getDownloadStatus()");
+		return ResponseEntity.ok (downloadManager.getDownloadStatus ());
+	}
+
+	@RequestMapping(value = "/isActive", method = RequestMethod.GET)
+	public ResponseEntity<Boolean> isActive (HttpServletRequest request) {
+		logger.info ("Service called: isActive()");
+		return ResponseEntity.ok (downloadManager.isCurrentlyRunning ());
+	}
 
 	@RequestMapping(value = "/commenceDownload")
 	public ResponseEntity<String> startDownload (HttpServletRequest request) {
@@ -46,11 +61,39 @@ public class DownloadController {
 		return ResponseEntity.ok ("Download of manifest commenced, id: " + ManifestProvider.getCurrentManifest ().getId ());
 	}
 
-	@RequestMapping(value = "/setCurrentManifest", method = RequestMethod.POST)
-	public void setCurrentManifest (String name) {
-		logger.info ("Service called: setCurrentManifest()");
+	@RequestMapping(value = "/cancelDownload", method = RequestMethod.GET)
+	public ResponseEntity<String> cancelDownload (HttpServletRequest request) {
+		logger.info ("Service called: cancelDownload()");
+		if (ManifestProvider.getCurrentManifest () == null || !downloadManager.isCurrentlyRunning ())
+			return ResponseEntity.ok ("Unable to cancel project as none are currently running");
 
-		return;
+		downloadManager.cancelDownload ();
+		return ResponseEntity.ok ("Canceling download of project: " + ManifestProvider.getCurrentManifest ().getId ());
+
+	}
+
+	@RequestMapping(value = "/setCurrentManifest/{id}", method = RequestMethod.GET)
+	public ResponseEntity<String> setCurrentManifest (@PathVariable String id) {
+		logger.info ("Service called: setCurrentManifest({})", id);
+
+		if (downloadManager.isCurrentlyRunning ()) {
+			return ResponseEntity.status (HttpStatus.CONFLICT).body (ErrorMessages.METHOD_UNAVAILABLE_DOWNLOAD_MANAGER_RUNNING);
+		}
+
+		for (Manifest manifest : ManifestProvider.getManifests ()) {
+			if (manifest.getId ().toString ().equals (id)) {
+				ManifestProvider.setCurrentManifest (manifest);
+				return ResponseEntity.status (HttpStatus.ACCEPTED).body (null);
+			}
+		}
+
+		return ResponseEntity.status (HttpStatus.NOT_FOUND).body (ErrorMessages.MANIFEST_NOT_FOUND_WP + id);
+	}
+
+	@RequestMapping(value = "/getCurrentManifest", method = RequestMethod.GET)
+	public ResponseEntity<Manifest> getCurrentManifest () {
+		logger.info ("Service called: getCurrentManifest()");
+		return ResponseEntity.ok (ManifestProvider.getCurrentManifest ());
 	}
 
 	@RequestMapping(value = "/get")
@@ -87,7 +130,6 @@ public class DownloadController {
 				return ResponseEntity.status (HttpStatus.OK).body (null);
 			}
 		}
-
 		return ResponseEntity.status (HttpStatus.NOT_FOUND).body (null);
 	}
 
@@ -111,6 +153,40 @@ public class DownloadController {
 		}
 
 		ManifestProvider.getManifests ().add (inputManifest);
+		return ResponseEntity.ok (inputManifest);
+
+	}
+
+	@RequestMapping(value = "/edit", method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<Manifest> edit (@RequestBody Manifest inputManifest, HttpServletRequest request) {
+		logger.info ("Service called: edit(), from IP: {}", request.getRemoteAddr ());
+
+		if (!ManifestUtils.manifestNameExists (inputManifest.getName ())) {
+			logger.info ("Unable to find manifest name");
+			return ResponseEntity.status (HttpStatus.NOT_FOUND).body (null);
+		}
+		if (ManifestProvider.getCurrentManifest () != null && ManifestProvider.getCurrentManifest ().getId ().equals (inputManifest.getId ())) {
+			return ResponseEntity.status (HttpStatus.BAD_REQUEST).body (null);
+		}
+
+		Set<Manifest> newManifests = new HashSet<Manifest>();
+
+		for (Manifest manifest : ManifestProvider.getManifests ()) {
+
+			if (!manifest.getId ().equals (inputManifest.getId ())) {
+				newManifests.add (manifest);
+			}
+		}
+
+		if (newManifests.size () == ManifestProvider.getManifests ().size ()) {
+			logger.info ("Unable to find manifest id");
+			return ResponseEntity.status (HttpStatus.NOT_FOUND).body (null);
+		}
+
+		newManifests.add (inputManifest);
+		ManifestProvider.setManifests (newManifests);
+
 		return ResponseEntity.ok (inputManifest);
 
 	}

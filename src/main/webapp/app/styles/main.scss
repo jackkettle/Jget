@@ -64,6 +64,14 @@ html {
     padding: 1rem 1rem 0 1rem;
 }
 
+.project-title{
+    padding-top: 0.75rem;
+}
+
+.feature{
+    text-align: center;
+}
+
 .btn,
 .btn:hover,
 .btn:active,
@@ -102,9 +110,17 @@ html {
     .lighten-1;
 }
 
+.text-left {
+    text-align: left;
+}
+
 .content-card aside {
     @extend .grey-text,
     .text-lighten-4;
+}
+
+.card-content-block{
+    width: 100%;
 }
 
 .loader-container {
@@ -125,4 +141,38 @@ html {
 
 .medium-height {
     min-height: 200px;
+}
+
+.small-height {
+    min-height: 70px;
+}
+
+
+.background-primary {
+    width: 100%;
+    display: block;
+    @extend .cyan,
+    .lighten-2;
+    @extend .white-text;
+}
+
+.active-block span{
+    margin-bottom: 8px;
+}
+
+.default{
+    font-weight: 300;
+    font-size: 0.9rem;
+    color: #fff;
+    background-color: #26a69a;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    background-clip: padding-box;
+    box-sizing: border-box;
+    padding: 0.6rem;
+}
+
+.column-1st-left-aligned td:first-child{
+    text-align: left;
 }
